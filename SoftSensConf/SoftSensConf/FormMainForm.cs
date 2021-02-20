@@ -709,34 +709,43 @@ namespace SoftSensConf
         #region
         private void buttonConfigurationConnect_Click(object sender, EventArgs e)
         {
-            if (!(System.IO.Ports.SerialPort.GetPortNames().ToList().Contains(comboBoxConfigurationSerialPorts.SelectedItem.ToString())))
-            {
-                MessageBox.Show("Port does not exist.\nPlease choose a new port.","ERROR!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                comboBoxConfigurationSerialPorts.Focus();
-            }
-
-
-            if (comboBoxConfigurationSerialPorts.SelectedIndex >= 0
-                && GlobalDataContainerClass.ConnectivityStatus == false
-                && System.IO.Ports.SerialPort.GetPortNames().ToList().Contains(comboBoxConfigurationSerialPorts.SelectedItem.ToString())) //Verify port
-            {
-                serialPortMain.PortName = comboBoxConfigurationSerialPorts.Items[comboBoxConfigurationSerialPorts.SelectedIndex].ToString();
-
-                if (comboBoxConfigurationSerialPorts.SelectedIndex >= 0)
+            try { 
+                if (comboBoxConfigurationSerialPorts.SelectedIndex >= 0
+                    && GlobalDataContainerClass.ConnectivityStatus == false)
                 {
-                    serialPortMain.BaudRate = Convert.ToInt32(comboBoxConfigurationChoseBaudRate.Items[comboBoxConfigurationChoseBaudRate.SelectedIndex]);
-                    serialPortMain.Open();
+                    serialPortMain.PortName = comboBoxConfigurationSerialPorts.Items[comboBoxConfigurationSerialPorts.SelectedIndex].ToString();
 
-                    // Add Portname and baud rate since you're connected
-                    #region
-                    GlobalDataContainerClass.BaudRateChosen = Convert.ToInt32(comboBoxConfigurationChoseBaudRate.Items[comboBoxConfigurationChoseBaudRate.SelectedIndex]);
-                    GlobalDataContainerClass.PortNameChosen = comboBoxConfigurationSerialPorts.Items[comboBoxConfigurationSerialPorts.SelectedIndex].ToString();
+                    if (comboBoxConfigurationSerialPorts.SelectedIndex >= 0)
+                    {
+                        serialPortMain.BaudRate = Convert.ToInt32(comboBoxConfigurationChoseBaudRate.Items[comboBoxConfigurationChoseBaudRate.SelectedIndex]);
+                        serialPortMain.Open();
 
-                    //Start Status checking
-                    textBoxDashboardError.Text = ""; //Reset text
-                    #endregion
+                        // Add Portname and baud rate since you're connected
+                        #region
+                        GlobalDataContainerClass.BaudRateChosen = Convert.ToInt32(comboBoxConfigurationChoseBaudRate.Items[comboBoxConfigurationChoseBaudRate.SelectedIndex]);
+                        GlobalDataContainerClass.PortNameChosen = comboBoxConfigurationSerialPorts.Items[comboBoxConfigurationSerialPorts.SelectedIndex].ToString();
 
+                        //Start Status checking
+                        textBoxDashboardError.Text = ""; //Reset text
+                        #endregion
+
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Could not connect.\nPlease try again.", "ERROR!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                comboBoxConfigurationSerialPorts.Items.Clear();
+                string[] comPorts = System.IO.Ports.SerialPort.GetPortNames();
+                foreach (string ports in comPorts)
+                {
+                    comboBoxConfigurationSerialPorts.Items.Add(ports);
+                }
+                comboBoxConfigurationSerialPorts.SelectedIndex = comboBoxConfigurationSerialPorts.Items.Count - 1;
+                comboBoxConfigurationSerialPorts.Focus();
             }
         }
         #endregion
@@ -851,6 +860,7 @@ namespace SoftSensConf
                                     GlobalDataContainerClass.StatusBarText = "Success";
                                     WaitNSeconds(1);
                                     buttonConfigurationSendConfiguration.Enabled = true;
+                                    MessageBox.Show("Configuration successfully sent to device!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                                     return;
                                 }
                                 //Wrong password, response is NOT 1, but received a response
@@ -1046,6 +1056,7 @@ namespace SoftSensConf
             else
             {
                 MessageBox.Show("Cannot save configuration with empty fields!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                textBoxConfigurationDeviceName.Focus();
             }
         }
         #endregion
@@ -1314,7 +1325,7 @@ namespace SoftSensConf
                             GlobalDataContainerClass.ConfigurationLog.Add((GlobalDataContainerClass.configReceived + ";" + DateTime.Now.ToString("dd/MM/yyyy | HH:mm:ss"))); //Add to master log
                             SaveConfigLogFile(); //Update config logfile
                             GlobalDataContainerClass.ChangedTabSize = true;
-
+                            MessageBox.Show("Configuration successfully received from device!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return;
                         }
                         #endregion
