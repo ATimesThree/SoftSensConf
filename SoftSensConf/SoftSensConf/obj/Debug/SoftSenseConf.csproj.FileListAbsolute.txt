@@ -1,0 +1,12 @@
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\bin\Debug\SoftSenseWare.exe.config
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\bin\Debug\SoftSenseWare.exe
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\bin\Debug\SoftSenseWare.pdb
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseConf.csprojAssemblyReference.cache
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseWare.AboutBoxSoftSenseConf.resources
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseWare.FormRickAshtley.resources
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseWare.FormMainForm.resources
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseWare.Properties.Resources.resources
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseConf.csproj.GenerateResource.cache
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseConf.csproj.CoreCompileInputs.cache
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseWare.exe
+C:\Users\FoFFeX\Documents\GitHub\PB1150---OOP-DB\Arbeidskrav\Krav_2Real\SoftSenseWare\SoftSenseWare\obj\Debug\SoftSenseWare.pdb
