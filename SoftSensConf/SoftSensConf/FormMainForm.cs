@@ -147,7 +147,7 @@ namespace SoftSensConf
 
         /////////////// DASHBOARD ///////////////
         #region
-        #region
+
 
         // HOVERING
         #region
@@ -313,126 +313,134 @@ namespace SoftSensConf
 
             }
         }
+        #endregion
 
 
         // ADD DATA TO CHART AND LISTBOXES
+        #region
         private void timerDataChartUpdater_Tick(object sender, EventArgs e)
         {
-            if (serialPortMain.BytesToRead > 0 && GlobalDataContainerClass.LiveData && serialPortMain.IsOpen)
+            try
             {
-                string availableData = "";
-                availableData = serialPortMain.ReadExisting().ToString();
-                availableData = availableData.Replace(";\r\n", "").Replace(";\n", "").Replace(";\r", ""); //Remove new lines at the end
-
-                if (!(availableData == "") && Int32.TryParse(availableData, out Int32 JustForChecking))
+                if (serialPortMain.BytesToRead > 0 && GlobalDataContainerClass.LiveData)
                 {
+                    string availableData = "";
+                    availableData = serialPortMain.ReadExisting().ToString();
+                    availableData = availableData.Replace(";\r\n", "").Replace(";\n", "").Replace(";\r", ""); //Remove new lines at the end
 
-                    //Reading is outside of range accepted
-
-                    // Value might be an alarm
-                        #region
-                     if (GlobalDataContainerClass.AlarmReceived && (Int32.Parse(availableData) == 0 
-                        || Int32.Parse(availableData) == 1 || Int32.Parse(availableData) == 2 || Int32.Parse(availableData) == 3))
+                    if (!(availableData == "") && Int32.TryParse(availableData, out Int32 JustForChecking))
                     {
-                        Int32 deviceStatus = Int32.Parse(availableData);
-                        //ALARM IMAGE UPDATER
+
+                        //Reading is outside of range accepted
+
+                        // Value might be an alarm
                         #region
-                        //New status which is not OK (image change needed)
-                        if ((deviceStatus == 1 || deviceStatus == 2 || deviceStatus == 3) && (GlobalDataContainerClass.AlarmStatus == 0))
+                        if (GlobalDataContainerClass.AlarmReceived && (Int32.Parse(availableData) == 0
+                           || Int32.Parse(availableData) == 1 || Int32.Parse(availableData) == 2 || Int32.Parse(availableData) == 3))
                         {
-                            pictureBoxDashboardError.Image = SoftSensConf.Properties.Resources.AlertActive;
-                        }
-                        else if (deviceStatus == 0)
-                        {
-                            pictureBoxDashboardError.Image = null;
+                            Int32 deviceStatus = Int32.Parse(availableData);
+                            //ALARM IMAGE UPDATER
+                            #region
+                            //New status which is not OK (image change needed)
+                            if ((deviceStatus == 1 || deviceStatus == 2 || deviceStatus == 3) && (GlobalDataContainerClass.AlarmStatus == 0))
+                            {
+                                pictureBoxDashboardError.Image = SoftSensConf.Properties.Resources.AlertActive;
+                            }
+                            else if (deviceStatus == 0)
+                            {
+                                pictureBoxDashboardError.Image = null;
+                            }
+                            #endregion
+
+                            //ALARM TEXT UPDATER
+                            #region
+                            //Status is OK!
+                            if (deviceStatus == 0)
+                            {
+                                textBoxDashboardError.Text = "Device status: OK!";
+                                GlobalDataContainerClass.AlarmStatus = deviceStatus;
+                                GlobalDataContainerClass.AlarmTickCount = 0;
+                            }
+
+                            //STATUS IS FAIL
+                            else if (deviceStatus == 1)
+                            {
+                                textBoxDashboardError.Text = "Device status: FAIL!";
+                                GlobalDataContainerClass.AlarmStatus = deviceStatus;
+                                GlobalDataContainerClass.AlarmTickCount = 0;
+                            }
+
+                            //STATUS IS ALARMLOW
+                            else if (deviceStatus == 2)
+                            {
+                                textBoxDashboardError.Text = "Device status: ALARM LOW!";
+                                GlobalDataContainerClass.AlarmStatus = deviceStatus;
+                                GlobalDataContainerClass.AlarmTickCount = 0;
+                            }
+
+                            //STATUS IS ALARMHIGH
+                            else if (deviceStatus == 3)
+                            {
+                                textBoxDashboardError.Text = "Device status: ALARM HIGH!";
+                                GlobalDataContainerClass.AlarmStatus = deviceStatus;
+                                GlobalDataContainerClass.AlarmTickCount = 0;
+                            }
+                            GlobalDataContainerClass.AlarmReceived = false;
+
                         }
                         #endregion
 
-                        //ALARM TEXT UPDATER
+                        else if ((Int32.Parse(availableData) > 1000 || Int32.Parse(availableData) <= 0))
+                        {
+                            textBoxDashboardFaultyData.Text = "Faulty data received: " + availableData;
+                            //Throw some error!
+                        }
+                        #endregion
+
+                        //Reading is within range
                         #region
-                        //Status is OK!
-                        if (deviceStatus == 0)
+                        else
                         {
-                            textBoxDashboardError.Text = "Device status: OK!";
-                            GlobalDataContainerClass.AlarmStatus = deviceStatus;
-                            GlobalDataContainerClass.AlarmTickCount = 0;
-                        }
+                            textBoxDashboardFaultyData.Text = "";
+                            listBoxDashboardTextDataRaw.Items.Add(availableData);
+                            chartDashboardChartRaw.Series["RawData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataRaw.Items.Count - 1),
+                                                                  Convert.ToDouble(listBoxDashboardTextDataRaw.Items[listBoxDashboardTextDataRaw.Items.Count - 1]));
 
-                        //STATUS IS FAIL
-                        else if (deviceStatus == 1)
-                        {
-                            textBoxDashboardError.Text = "Device status: FAIL!";
-                            GlobalDataContainerClass.AlarmStatus = deviceStatus;
-                            GlobalDataContainerClass.AlarmTickCount = 0;
-                        }
+                            listBoxDashboardTextDataScaled.Items.Add(scaledDataConverter(availableData));
+                            chartDashboardChartScaled.Series["ScaledData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataScaled.Items.Count - 1),
+                                                                  Convert.ToDouble(listBoxDashboardTextDataScaled.Items[listBoxDashboardTextDataScaled.Items.Count - 1]));
 
-                        //STATUS IS ALARMLOW
-                        else if (deviceStatus == 2)
-                        {
-                            textBoxDashboardError.Text = "Device status: ALARM LOW!";
-                            GlobalDataContainerClass.AlarmStatus = deviceStatus;
-                            GlobalDataContainerClass.AlarmTickCount = 0;
+                            GlobalDataContainerClass.NumberOfDataPoints += 1;
                         }
-
-                        //STATUS IS ALARMHIGH
-                        else if (deviceStatus == 3)
-                        {
-                            textBoxDashboardError.Text = "Device status: ALARM HIGH!";
-                            GlobalDataContainerClass.AlarmStatus = deviceStatus;
-                            GlobalDataContainerClass.AlarmTickCount = 0;
-                        }
-                        GlobalDataContainerClass.AlarmReceived = false;
-
+                        #endregion
                     }
-                    #endregion
 
-                    else if ((Int32.Parse(availableData) > 1000 || Int32.Parse(availableData) <= 0))
-                    {
-                        textBoxDashboardFaultyData.Text = "Faulty data received: " + availableData;
-                        //Throw some error!
-                    }
-                    #endregion
-
-                    //Reading is within range
+                    // Fix listbox view
                     #region
-                    else
+                    if (listBoxDashboardTextDataRaw.Items.Count > 1)
                     {
-                        textBoxDashboardFaultyData.Text = "";
-                        listBoxDashboardTextDataRaw.Items.Add(availableData);
-                        chartDashboardChartRaw.Series["RawData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataRaw.Items.Count - 1),
-                                                              Convert.ToDouble(listBoxDashboardTextDataRaw.Items[listBoxDashboardTextDataRaw.Items.Count - 1]));
+                        listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, true);
+                        listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, false);
+                    }
 
-                        listBoxDashboardTextDataScaled.Items.Add(scaledDataConverter(availableData));
-                        chartDashboardChartScaled.Series["ScaledData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataScaled.Items.Count - 1),
-                                                              Convert.ToDouble(listBoxDashboardTextDataScaled.Items[listBoxDashboardTextDataScaled.Items.Count - 1]));
-
-                        GlobalDataContainerClass.NumberOfDataPoints += 1;
+                    if (listBoxDashboardTextDataScaled.Items.Count > 1)
+                    {
+                        listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, true);
+                        listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, false);
                     }
                     #endregion
                 }
-
-                // Fix listbox view
-                #region
-                if (listBoxDashboardTextDataRaw.Items.Count > 1)
-                {
-                    listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, true);
-                    listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, false);
-                }
-
-                if (listBoxDashboardTextDataScaled.Items.Count > 1)
-                {
-                    listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, true);
-                    listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, false);
-                }
-                #endregion
+                // Update so loop continues
+                timerDataChartUpdater.Enabled = false;
+                timerSerialDataRequester.Enabled = true;
             }
-            // Update so loop continues
-            timerDataChartUpdater.Enabled = false;
-            timerSerialDataRequester.Enabled = true;
+            #endregion
+            #region
+            catch (Exception)
+            {
+                GlobalDataContainerClass.ConnectivityStatus = false;
+            }
         }
-
-        #endregion
-
         #endregion
 
         #endregion

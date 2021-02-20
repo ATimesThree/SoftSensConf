@@ -240,7 +240,7 @@ namespace SoftSensConf
             this.buttonMenuBarConfiguration.Name = "buttonMenuBarConfiguration";
             this.buttonMenuBarConfiguration.Size = new System.Drawing.Size(186, 42);
             this.buttonMenuBarConfiguration.TabIndex = 91;
-            this.buttonMenuBarConfiguration.Text = "&Setup && Config";
+            this.buttonMenuBarConfiguration.Text = "Setup && &Config";
             this.buttonMenuBarConfiguration.UseVisualStyleBackColor = true;
             this.buttonMenuBarConfiguration.Click += new System.EventHandler(this.buttonMenuBarConfiguration_Click);
             this.buttonMenuBarConfiguration.MouseLeave += new System.EventHandler(this.resetStatusBarText);
