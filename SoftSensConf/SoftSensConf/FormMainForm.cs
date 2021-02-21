@@ -642,7 +642,23 @@ namespace SoftSensConf
         {
             if (GlobalDataContainerClass.LiveData)
             {
+                GlobalDataContainerClass.AlarmTickCount = 0;
+                GlobalDataContainerClass.AlarmReceived = false;
+                GlobalDataContainerClass.AlarmRequested = false;
+                timerDataChartUpdater.Enabled = false;
+                timerSerialDataRequester.Enabled = false;
                 GlobalDataContainerClass.LiveData = false;
+
+                //Clear out potential missed readings
+                string clearBuffer = "";
+                try
+                {
+                    clearBuffer = serialPortMain.ReadExisting().ToString();
+                }
+                catch (Exception)
+                {
+                    //Do nothing
+                }
             }
         }
         #endregion

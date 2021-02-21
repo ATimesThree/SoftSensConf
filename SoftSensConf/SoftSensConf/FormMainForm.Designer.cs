@@ -158,6 +158,7 @@ namespace SoftSensConf
             this.timerDataChartUpdater = new System.Windows.Forms.Timer(this.components);
             this.toolTipConfigDeviceName = new System.Windows.Forms.ToolTip(this.components);
             this.timerAlarmRequester = new System.Windows.Forms.Timer(this.components);
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.panelMainMenu.SuspendLayout();
             this.panelLogoPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogoBox)).BeginInit();
@@ -195,6 +196,7 @@ namespace SoftSensConf
             // panelMainMenu
             // 
             this.panelMainMenu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(238)))), ((int)(((byte)(238)))), ((int)(((byte)(238)))));
+            this.panelMainMenu.Controls.Add(this.textBox1);
             this.panelMainMenu.Controls.Add(this.buttonMenuBarExit);
             this.panelMainMenu.Controls.Add(this.buttonMenuBarConfiguration);
             this.panelMainMenu.Controls.Add(this.buttonDashboard);
@@ -1828,6 +1830,13 @@ namespace SoftSensConf
             this.timerAlarmRequester.Interval = 500;
             this.timerAlarmRequester.Tick += new System.EventHandler(this.timerAlarmRequester_Tick);
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(31, 280);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(100, 20);
+            this.textBox1.TabIndex = 93;
+            // 
             // FormMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2013,6 +2022,7 @@ namespace SoftSensConf
         private System.Windows.Forms.TextBox textBoxDashboardFaultyData;
         private System.Windows.Forms.Button buttonConfigStopData;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.TextBox textBox1;
     }
     
 }
