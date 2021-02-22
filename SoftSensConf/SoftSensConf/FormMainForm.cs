@@ -390,7 +390,7 @@ namespace SoftSensConf
                         }
                         #endregion
 
-                        else if ((Int32.Parse(availableData) > 1000 || Int32.Parse(availableData) <= 0))
+                        else if ((Int32.Parse(availableData) > 1000 || Int32.Parse(availableData) < 0))
                         {
                             textBoxDashboardFaultyData.Text = "Faulty data received: " + availableData;
                             //Throw some error!
@@ -653,6 +653,7 @@ namespace SoftSensConf
                 string clearBuffer = "";
                 try
                 {
+                    WaitNSeconds(1);
                     clearBuffer = serialPortMain.ReadExisting().ToString();
                 }
                 catch (Exception)
@@ -800,7 +801,7 @@ namespace SoftSensConf
 
                 // Check if required fields are filled or same as existing configuration
                 #region
-                if (!(textBoxConfigurationDeviceName.Text.Length == 10))
+                if (textBoxConfigurationDeviceName.Text.Length == 0)
                 {
                     MessageBox.Show("Device name is blank", "Device name", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     textBoxConfigurationDeviceName.Focus();
@@ -962,7 +963,7 @@ namespace SoftSensConf
                                 Int32 parsedALO, parsedAHI;
 
                                 //Check if values are legit and update if they are
-                                if (checkLine[0].Length == 10 // Device name is has a length of 10
+                                if (checkLine[0].Length <= 10 && checkLine[0].Length != 0 // Device name has correct len but not blank
                                     && double.TryParse(checkLine[1], out parsedLRV) && checkLine[1].Length <= 7 //LRV can be transformed to a double
                                     && double.TryParse(checkLine[2], out parsedURV) && checkLine[2].Length <= 7 //URV can be transformed to a double
                                     && Int32.TryParse(checkLine[3], out parsedALO) && checkLine[3].Length <= 4 //Alarm Lower can be transformed to a Int32
@@ -1020,7 +1021,7 @@ namespace SoftSensConf
                         {
                             MessageBox.Show("No config was found!\r\nPlease check your file."
                                 +"\r\n\r\nCorrect format:"
-                                +"\r\nDevice name | string | Exactly 10 characters"
+                                +"\r\nDevice name | string | 1-10 characters"
                                 +"\r\nLRV                | float   | Max 7 characters"
                                 +"\r\nURV               | float   | Max 7 characters"
                                 +"\r\nAlarmL           | Int      | Max 4 characters"
@@ -1045,7 +1046,7 @@ namespace SoftSensConf
         #region
         private void buttonConfigurationSaveConfiguration_Click(object sender, EventArgs e)
         {
-            if (textBoxConfigurationDeviceName.Text.Length == 10)
+            if (textBoxConfigurationDeviceName.Text.Length <= 10 && textBoxConfigurationDeviceName.Text.Length != 0)
             {
                 SaveFileDialog saveCurrentConfig = new SaveFileDialog();
                 saveCurrentConfig.FileName = "SoftSensConfiguration_" + DateTime.Now.ToString("dd-MM-yyyy") + ".ssc";
@@ -1241,11 +1242,11 @@ namespace SoftSensConf
 
         private void textBoxConfigurationDeviceName_Leave(object sender, EventArgs e)
         {
-            if (textBoxConfigurationDeviceName.Text.Length < 10 && !(textBoxConfigurationDeviceName.Text.Length == 0))
-            {
-                MessageBox.Show("Device name must to be a length of 10 characters", "Length Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                textBoxConfigurationDeviceName.Focus();
-            }
+            //if (textBoxConfigurationDeviceName.Text.Length > 1 && !(textBoxConfigurationDeviceName.Text.Length == 0))
+            //{
+            //    MessageBox.Show("Device name must to be a length of 10 characters", "Length Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //    textBoxConfigurationDeviceName.Focus();
+            //}
         }
         #endregion
 
@@ -1323,7 +1324,7 @@ namespace SoftSensConf
 
                         //Check if values are legit and update if they are
                         #region
-                        if (tempData[0].Length == 10 // Device name is has a length of 10
+                        if (tempData[0].Length <= 10 && tempData[0].Length != 0 // Device name is less or equal to a len of 10, but not zero
                             && double.TryParse(tempData[1], out parsedLRV) && tempData[1].Length <= 7 //LRV can be transformed to a double
                             && double.TryParse(tempData[2], out parsedURV) && tempData[2].Length <= 7 //URV can be transformed to a double
                             && Int32.TryParse(tempData[3], out parsedALO) && tempData[3].Length <= 4 //Alarm Lower can be transformed to a Int32
@@ -1578,19 +1579,26 @@ namespace SoftSensConf
         #region
         private void SaveConfigLogFile()
         {
-            string sPath = @"SoftSensConf_ConfigLog_" + DateTime.Now.ToString("dd-MM-yyyy") + ".csv"; //Path
-
-            System.IO.StreamWriter SaveFile = new System.IO.StreamWriter(sPath);
-
-            SaveFile.WriteLine("SoftSensConf_Version:" + GlobalDataContainerClass.SoftWareVersion
-                                  + ";DateTime_Logging: " + DateTime.Now.ToString("dd/MM/yyyy | HH:mm:ss"));//Informational top info
-            SaveFile.WriteLine("DeviceName;LRV;URV;ALARM-L;ALARM-H;DateTimeOfConfig"); // Insert headers
-
-            foreach (var item in GlobalDataContainerClass.ConfigurationLog)
+            try
             {
-                SaveFile.WriteLine(item);
+                string sPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"SoftSensConf_ConfigLog_" + DateTime.Now.ToString("dd-MM-yyyy") + ".csv"; //Path
+
+                System.IO.StreamWriter SaveFile = new System.IO.StreamWriter(sPath);
+
+                SaveFile.WriteLine("SoftSensConf_Version:" + GlobalDataContainerClass.SoftWareVersion
+                                      + ";DateTime_Logging: " + DateTime.Now.ToString("dd/MM/yyyy | HH:mm:ss"));//Informational top info
+                SaveFile.WriteLine("DeviceName;LRV;URV;ALARM-L;ALARM-H;DateTimeOfConfig"); // Insert headers
+
+                foreach (var item in GlobalDataContainerClass.ConfigurationLog)
+                {
+                    SaveFile.WriteLine(item);
+                }
+                SaveFile.Close();
             }
-            SaveFile.Close();
+            catch (Exception)
+            {
+                //
+            }
         }
         #endregion
 

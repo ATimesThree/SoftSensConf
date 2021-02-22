@@ -85,6 +85,7 @@ namespace SoftSensConf
             this.textBoxRickAshley.TabIndex = 0;
             this.textBoxRickAshley.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.textBoxRickAshley.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxRickAshley_KeyDown);
+            this.textBoxRickAshley.Leave += new System.EventHandler(this.textBoxRickAshley_Leave);
             // 
             // labelRickAshleyTop
             // 
