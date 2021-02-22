@@ -28,7 +28,7 @@ namespace SoftSensConf
         {
             if (textBoxRickAshley.Text.Length == 0)
             {
-                MessageBox.Show("Password cant be empty!\nPlease type a password", "Empty Password!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Password cant be empty!\nPassword must be 8 charaters.", "Empty Password!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 textBoxRickAshley.Focus();
             }
             else
@@ -45,8 +45,17 @@ namespace SoftSensConf
         {
             if (e.KeyCode == Keys.Enter)
             {
-                buttonRickAshleyConfirm_Click(sender, e);
-                return;
+                if (textBoxRickAshley.Text.Length == 8)
+                {
+                    buttonRickAshleyConfirm_Click(sender, e);
+                    return;
+                }
+                else
+                {
+                    textBoxRickAshley_Leave(sender, e);
+                    return;
+                }
+
             }
             else if (e.KeyCode == Keys.Escape)
             {

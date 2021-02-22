@@ -1581,7 +1581,7 @@ namespace SoftSensConf
         {
             try
             {
-                string sPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + @"SoftSensConf_ConfigLog_" + DateTime.Now.ToString("dd-MM-yyyy") + ".csv"; //Path
+                string sPath = @"SoftSensConf_ConfigLog_" + DateTime.Now.ToString("dd-MM-yyyy") + ".csv"; //Path
 
                 System.IO.StreamWriter SaveFile = new System.IO.StreamWriter(sPath);
 
