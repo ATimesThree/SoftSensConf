@@ -1312,7 +1312,8 @@ namespace SoftSensConf
                         return;
                     }
                     GlobalDataContainerClass.configReceived = serialPortMain.ReadExisting().ToString();
-                    GlobalDataContainerClass.configReceived = GlobalDataContainerClass.configReceived.Replace(";\r\n", "").Replace(";\n", "").Replace(";\r", "").Replace(" ", ""); //Removing empty lines
+                    GlobalDataContainerClass.configReceived = GlobalDataContainerClass.configReceived.Replace(";\r\n", "").Replace(";\n", "").
+                        Replace(";\r", "").Replace(" ", "").Replace("\r\n","").Replace("\r","").Replace("\n",""); //Removing empty lines
                     string[] tempData = GlobalDataContainerClass.configReceived.Split(';');
 
                     // Checking for correct length
@@ -1340,8 +1341,8 @@ namespace SoftSensConf
                             GlobalDataContainerClass.DeviceALO = Int32.Parse(tempData[3]);
                             GlobalDataContainerClass.DeviceAHI = Int32.Parse(tempData[4]);
                             GlobalDataContainerClass.ConfigurationLog.Add((GlobalDataContainerClass.configReceived + ";" + DateTime.Now.ToString("dd/MM/yyyy | HH:mm:ss"))); //Add to master log
-                            SaveConfigLogFile(); //Update config logfile
                             GlobalDataContainerClass.ChangedTabSize = true;
+                            SaveConfigLogFile(); //Update config logfile
                             MessageBox.Show("Configuration successfully received from device!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             return;
                         }
@@ -1589,9 +1590,9 @@ namespace SoftSensConf
                                       + ";DateTime_Logging: " + DateTime.Now.ToString("dd/MM/yyyy | HH:mm:ss"));//Informational top info
                 SaveFile.WriteLine("DeviceName;LRV;URV;ALARM-L;ALARM-H;DateTimeOfConfig"); // Insert headers
 
-                foreach (var item in GlobalDataContainerClass.ConfigurationLog)
+                foreach (var line in GlobalDataContainerClass.ConfigurationLog)
                 {
-                    SaveFile.WriteLine(item);
+                    SaveFile.WriteLine(line);
                 }
                 SaveFile.Close();
             }
