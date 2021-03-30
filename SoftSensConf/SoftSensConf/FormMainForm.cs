@@ -21,6 +21,33 @@ namespace SoftSensConf
         #region
         private void Form1_Load(object sender, EventArgs e)
         {
+            //System Language
+            #region
+
+
+            //System.Globalization.CultureInfo ci = System.Globalization.CultureInfo.InstalledUICulture;
+            System.Globalization.CultureInfo ci = System.Globalization.CultureInfo.CurrentUICulture;
+
+            if (ci.Name.Substring(0,2) == "nb")
+            {
+                System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+                customCulture.NumberFormat.NumberDecimalSeparator = ",";
+
+                System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
+                GlobalDataContainerClass.SystemLang = "Norwegian";
+                GlobalDataContainerClass.NumSeperator = ",";
+            }
+            else
+            {
+                System.Globalization.CultureInfo customCulture = (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+                customCulture.NumberFormat.NumberDecimalSeparator = ".";
+
+                System.Threading.Thread.CurrentThread.CurrentCulture = customCulture;
+                GlobalDataContainerClass.NumSeperator = ".";
+                GlobalDataContainerClass.SystemLang = "English";
+            }
+            #endregion
+
             labelSoftwareVersion.Text = "Version: " + GlobalDataContainerClass.SoftWareVersion;
             tabControlMain.SelectedTab = tabControlMain.TabPages["tabPageConfiguration"];
         }
@@ -107,6 +134,7 @@ namespace SoftSensConf
             if (GlobalDataContainerClass.ConnectivityStatus == false)
             {
                 ConnectionLostReset();
+                buttonDashboardResetDatapoints_Click(sender, e);
             }
 
             // Username checking
@@ -114,29 +142,6 @@ namespace SoftSensConf
             {
                 textBoxMainUserName.Text = GlobalDataContainerClass.DeviceName;
             }
-
-            if (GlobalDataContainerClass.LiveData)
-            {
-                // Disable config buttons when receiving data
-                buttonConfigurationSendConfiguration.Enabled = false;
-                buttonConfigurationSendConfiguration.Cursor = Cursors.No;
-                buttonConfigurationRquestDeviceConfig.Enabled = false;
-                buttonConfigurationRquestDeviceConfig.Cursor = Cursors.No;
-                deviceConfigToolStripMenuItem.Enabled = false;
-                buttonConfigStopData.Enabled = true;
-                buttonConfigStopData.Visible = true;
-            }
-            else
-            {
-                buttonConfigStopData.Enabled = false;
-                buttonConfigStopData.Visible = false;
-                deviceConfigToolStripMenuItem.Enabled = true;
-                buttonConfigurationSendConfiguration.Enabled = true;
-                buttonConfigurationSendConfiguration.Cursor = Cursors.Default;
-                buttonConfigurationRquestDeviceConfig.Enabled = true;
-                buttonConfigurationRquestDeviceConfig.Cursor = Cursors.Default;
-            }
-
         }
 
         #endregion
@@ -268,7 +273,7 @@ namespace SoftSensConf
             }
             else
             {
-                tempValue = tempValue * ((GlobalDataContainerClass.DeviceURV - GlobalDataContainerClass.DeviceLRV) / 1024.0); // (Scale/Bits??)
+                tempValue = tempValue * ((GlobalDataContainerClass.DeviceURV - GlobalDataContainerClass.DeviceLRV) / 1024); // (Scale/Bits??)
                 rawDataScaled = tempValue.ToString();
             }
 
@@ -331,8 +336,6 @@ namespace SoftSensConf
                     if (!(availableData == "") && Int32.TryParse(availableData, out Int32 JustForChecking))
                     {
 
-                        //Reading is outside of range accepted
-
                         // Value might be an alarm
                         #region
                         if (GlobalDataContainerClass.AlarmReceived && (Int32.Parse(availableData) == 0
@@ -357,7 +360,7 @@ namespace SoftSensConf
                             //Status is OK!
                             if (deviceStatus == 0)
                             {
-                                textBoxDashboardError.Text = "Device status: OK!";
+                                textBoxDashboardError.Text = "OK!";
                                 GlobalDataContainerClass.AlarmStatus = deviceStatus;
                                 GlobalDataContainerClass.AlarmTickCount = 0;
                             }
@@ -365,7 +368,7 @@ namespace SoftSensConf
                             //STATUS IS FAIL
                             else if (deviceStatus == 1)
                             {
-                                textBoxDashboardError.Text = "Device status: FAIL!";
+                                textBoxDashboardError.Text = "FAIL!";
                                 GlobalDataContainerClass.AlarmStatus = deviceStatus;
                                 GlobalDataContainerClass.AlarmTickCount = 0;
                             }
@@ -373,7 +376,7 @@ namespace SoftSensConf
                             //STATUS IS ALARMLOW
                             else if (deviceStatus == 2)
                             {
-                                textBoxDashboardError.Text = "Device status: ALARM LOW!";
+                                textBoxDashboardError.Text = "ALARM LOW!";
                                 GlobalDataContainerClass.AlarmStatus = deviceStatus;
                                 GlobalDataContainerClass.AlarmTickCount = 0;
                             }
@@ -381,7 +384,7 @@ namespace SoftSensConf
                             //STATUS IS ALARMHIGH
                             else if (deviceStatus == 3)
                             {
-                                textBoxDashboardError.Text = "Device status: ALARM HIGH!";
+                                textBoxDashboardError.Text = "ALARM HIGH!";
                                 GlobalDataContainerClass.AlarmStatus = deviceStatus;
                                 GlobalDataContainerClass.AlarmTickCount = 0;
                             }
@@ -390,9 +393,10 @@ namespace SoftSensConf
                         }
                         #endregion
 
+                        //Reading is outside of range accepted
                         else if ((Int32.Parse(availableData) > 1000 || Int32.Parse(availableData) < 0))
                         {
-                            textBoxDashboardFaultyData.Text = "Faulty data received: " + availableData;
+                            textBoxDashboardFaultyData.Text = availableData;
                             //Throw some error!
                         }
                         #endregion
@@ -401,7 +405,7 @@ namespace SoftSensConf
                         #region
                         else
                         {
-                            textBoxDashboardFaultyData.Text = "";
+                            //textBoxDashboardFaultyData.Text = "";
                             listBoxDashboardTextDataRaw.Items.Add(availableData);
                             chartDashboardChartRaw.Series["RawData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataRaw.Items.Count - 1),
                                                                   Convert.ToDouble(listBoxDashboardTextDataRaw.Items[listBoxDashboardTextDataRaw.Items.Count - 1]));
@@ -773,6 +777,7 @@ namespace SoftSensConf
         private void buttonConfigurationDisconnect_Click_1(object sender, EventArgs e)
         {
             ConnectionLostReset(); // set variables to default
+            buttonDashboardResetDatapoints_Click(sender, e);
             WaitNSeconds(1);
             serialPortMain.Close(); //Disconnect from port
             comboBoxConfigurationSerialPorts.Focus();
@@ -787,6 +792,18 @@ namespace SoftSensConf
         {
             if (GlobalDataContainerClass.ConnectivityStatus)
             {
+                if (GlobalDataContainerClass.LiveData)
+                {
+                    DialogResult DiaRes = MessageBox.Show("Sensor logging must be stopped before request can be sent to device.\r\nDo you want to stop logging and send request?", "Sensor logging active", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    if (DiaRes == DialogResult.Yes)
+                    {
+                        buttonDashboardStopReceiving_Click(sender, e);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
                 StopAlarmRequest(); //Reset alarm ticker just to be sure
 
                 GlobalDataContainerClass.StatusBarText = "";
@@ -822,6 +839,11 @@ namespace SoftSensConf
                 else if (GlobalDataContainerClass.configToBeSent == GlobalDataContainerClass.configReceived)
                 {
                     MessageBox.Show("Config is already on device", "Config already existing", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+                else if (Convert.ToDouble(textBoxConfigurationURV.Text) == 0)
+                {
+                    MessageBox.Show("Upper-Range-Value cannot be zero", "Value error", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
                 #endregion
@@ -878,6 +900,10 @@ namespace SoftSensConf
                                     WaitNSeconds(1);
                                     buttonConfigurationSendConfiguration.Enabled = true;
                                     MessageBox.Show("Configuration successfully sent to device!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                    //Reset datapoints
+                                    buttonDashboardResetDatapoints_Click(sender, e);
+
                                     return;
                                 }
                                 //Wrong password, response is NOT 1, but received a response
@@ -1019,15 +1045,30 @@ namespace SoftSensConf
                         //No config found at all
                         else
                         {
-                            MessageBox.Show("No config was found!\r\nPlease check your file."
-                                +"\r\n\r\nCorrect format:"
-                                +"\r\nDevice name | string | 1-10 characters"
-                                +"\r\nLRV                | float   | Max 7 characters"
-                                +"\r\nURV               | float   | Max 7 characters"
-                                +"\r\nAlarmL           | Int      | Max 4 characters"
-                                +"\r\nAlarmH          | Int      | Max 4 characters"
-                                + "\r\nDelimiter       | string | ';' "
-                                + "\r\n\r\nExample: RIPHARAMBE;5.0;50.0;10;100", "No config found!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (GlobalDataContainerClass.SystemLang == "English")
+                            {
+                                MessageBox.Show("No config was found!\r\nPlease check your file."
+                                    + "\r\n\r\nCorrect format:"
+                                    + "\r\nDevice name | string | 1-10 characters"
+                                    + "\r\nLRV                | float   | Max 7 characters"
+                                    + "\r\nURV               | float   | Max 7 characters"
+                                    + "\r\nAlarmL           | Int      | Max 4 characters"
+                                    + "\r\nAlarmH          | Int      | Max 4 characters"
+                                    + "\r\nDelimiter       | string | ';' "
+                                    + "\r\n\r\nExample: RIPHARAMBE;5.0;50.0;10;100", "No config found!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
+                            else
+                            {
+                                MessageBox.Show("No config was found!\r\nPlease check your file."
+                                    + "\r\n\r\nCorrect format:"
+                                    + "\r\nDevice name | string | 1-10 characters"
+                                    + "\r\nLRV                | float   | Max 7 characters"
+                                    + "\r\nURV               | float   | Max 7 characters"
+                                    + "\r\nAlarmL           | Int      | Max 4 characters"
+                                    + "\r\nAlarmH          | Int      | Max 4 characters"
+                                    + "\r\nDelimiter       | string | ';' "
+                                    + "\r\n\r\nExample: RIPHARAMBE;5,0;50,0;10;100", "No config found!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }
                         }
 
                     }
@@ -1046,7 +1087,7 @@ namespace SoftSensConf
         #region
         private void buttonConfigurationSaveConfiguration_Click(object sender, EventArgs e)
         {
-            if (textBoxConfigurationDeviceName.Text.Length <= 10 && textBoxConfigurationDeviceName.Text.Length != 0)
+            if (textBoxConfigurationDeviceName.Text.Length <= 10 && textBoxConfigurationDeviceName.Text.Length != 0 && Convert.ToDouble(textBoxConfigurationURV.Text) > 0)
             {
                 SaveFileDialog saveCurrentConfig = new SaveFileDialog();
                 saveCurrentConfig.FileName = "SoftSensConfiguration_" + DateTime.Now.ToString("dd-MM-yyyy") + ".ssc";
@@ -1054,21 +1095,39 @@ namespace SoftSensConf
 
                 if (saveCurrentConfig.ShowDialog() == DialogResult.OK)
                 {
-                    System.IO.StreamWriter SaveCurrentConfig = new System.IO.StreamWriter(saveCurrentConfig.FileName);
+                    try
+                    {
+                        System.IO.StreamWriter SaveCurrentConfig = new System.IO.StreamWriter(saveCurrentConfig.FileName);
 
-                    SaveCurrentConfig.WriteLine("SoftSensConf_Version:" + GlobalDataContainerClass.SoftWareVersion
-                          + ";DateTimeSaved: " + DateTime.Now.ToString("dd/MM/yyyy | HH:mm:ss"));//Informational top info
-                    SaveCurrentConfig.WriteLine("DeviceName;LRV;URV;ALARM-L;ALARM-H"); // Insert headers
+                        SaveCurrentConfig.WriteLine("SoftSensConf_Version:" + GlobalDataContainerClass.SoftWareVersion
+                              + ";DateTimeSaved: " + DateTime.Now.ToString("dd/MM/yyyy | HH:mm:ss"));//Informational top info
+                        SaveCurrentConfig.WriteLine("DeviceName;LRV;URV;ALARM-L;ALARM-H"); // Insert headers
 
 
-                    SaveCurrentConfig.WriteLine("" + textBoxConfigurationDeviceName.Text + ";"
-                                                + textBoxConfigurationLRV.Text + ";"
-                                                + textBoxConfigurationURV.Text + ";"
-                                                + textBoxConfigurationAlarmLow.Text + ";"
-                                                + textBoxConfigurationAlarmHigh.Text);
-                    SaveCurrentConfig.Close();
-                    MessageBox.Show("Configuration saved!", "SUCCESS!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        SaveCurrentConfig.WriteLine("" + textBoxConfigurationDeviceName.Text + ";"
+                                                    + textBoxConfigurationLRV.Text + ";"
+                                                    + textBoxConfigurationURV.Text + ";"
+                                                    + textBoxConfigurationAlarmLow.Text + ";"
+                                                    + textBoxConfigurationAlarmHigh.Text);
+                        SaveCurrentConfig.Close();
+                        MessageBox.Show("Configuration saved!", "SUCCESS!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    }
+                    catch (Exception)
+                    {
+                        MessageBox.Show("Could not save file.\r\nPlease try again", "Save Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
+            }
+            else if (textBoxConfigurationDeviceName.Text.Length == 0)
+            {
+                MessageBox.Show("Cannot save configuration with empty Device Name!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                textBoxConfigurationDeviceName.Focus();
+            }
+            else if (Convert.ToDouble(textBoxConfigurationURV.Text) == 0)
+            {
+                MessageBox.Show("Cannot save configuration with Upper-Range-Value as zero!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                textBoxConfigurationURV.Focus();
             }
             else
             {
@@ -1130,17 +1189,34 @@ namespace SoftSensConf
 
         private void textBoxConfigurationURV_KeyPress(object sender, KeyPressEventArgs e)
         {
+
             // Only accept numbers
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
-                    (e.KeyChar != '.'))
+            if (GlobalDataContainerClass.SystemLang == "English")
             {
-                e.Handled = true;
+                if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+                {
+                    e.Handled = true;
+                }
+
+                // only allow one decimal point
+                if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+                {
+                    e.Handled = true;
+                }
             }
 
-            // only allow one decimal point
-            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+            else
             {
-                e.Handled = true;
+                if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != ','))
+                {
+                    e.Handled = true;
+                }
+
+                // only allow one decimal point
+                if ((e.KeyChar == ',') && ((sender as TextBox).Text.IndexOf(',') > -1))
+                {
+                    e.Handled = true;
+                }
             }
         }
 
@@ -1148,11 +1224,24 @@ namespace SoftSensConf
         private void textBoxConfigurationLRV_TextChanged(object sender, EventArgs e)
         {
             // Try to copy in something thats not a number
-            if (System.Text.RegularExpressions.Regex.IsMatch(textBoxConfigurationLRV.Text, "[^.0-9]"))
+            
+            if (GlobalDataContainerClass.SystemLang == "English")
             {
-                MessageBox.Show("Please only enter numbers.", "NAN Registered!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                textBoxConfigurationLRV.Text = "";
-                textBoxConfigurationLRV.Focus();
+                if (System.Text.RegularExpressions.Regex.IsMatch(textBoxConfigurationLRV.Text, "[^.0-9]"))
+                {
+                    MessageBox.Show("Please only enter numbers.", "NAN Registered!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    textBoxConfigurationLRV.Text = "";
+                    textBoxConfigurationLRV.Focus();
+                }
+            }
+            else
+            {
+                if (System.Text.RegularExpressions.Regex.IsMatch(textBoxConfigurationLRV.Text, "[^,0-9]"))
+                {
+                    MessageBox.Show("Please only enter numbers.", "NAN Registered!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    textBoxConfigurationLRV.Text = "";
+                    textBoxConfigurationLRV.Focus();
+                }
             }
         }
 
@@ -1164,28 +1253,56 @@ namespace SoftSensConf
 
         private void textBoxConfigurationLRV_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Only accept numbers
-            if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) &&
-                    (e.KeyChar != '.'))
+            if (GlobalDataContainerClass.SystemLang == "English")
             {
-                e.Handled = true;
-            }
+                // Only accept numbers
+                if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != '.'))
+                {
+                    e.Handled = true;
+                }
 
-            // only allow one decimal point
-            if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+                // only allow one decimal point
+                if ((e.KeyChar == '.') && ((sender as TextBox).Text.IndexOf('.') > -1))
+                {
+                    e.Handled = true;
+                }
+            }
+            else
             {
-                e.Handled = true;
+                // Only accept numbers
+                if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar) && (e.KeyChar != ','))
+                {
+                    e.Handled = true;
+                }
+
+                // only allow one decimal point
+                if ((e.KeyChar == ',') && ((sender as TextBox).Text.IndexOf(',') > -1))
+                {
+                    e.Handled = true;
+                }
             }
         }
 
         private void textBoxConfigurationURV_TextChanged(object sender, EventArgs e)
         {
             // Try to copy in something thats not a number
-            if (System.Text.RegularExpressions.Regex.IsMatch(textBoxConfigurationURV.Text, "[^.0-9]"))
+            if (GlobalDataContainerClass.SystemLang == "English")
             {
-                MessageBox.Show("Please only enter numbers.", "NAN Registered!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                textBoxConfigurationURV.Text = "";
-                textBoxConfigurationURV.Focus();
+                if (System.Text.RegularExpressions.Regex.IsMatch(textBoxConfigurationURV.Text, "[^.0-9]"))
+                {
+                    MessageBox.Show("Please only enter numbers.", "NAN Registered!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    textBoxConfigurationURV.Text = "";
+                    textBoxConfigurationURV.Focus();
+                }
+            }
+            else
+            {
+                if (System.Text.RegularExpressions.Regex.IsMatch(textBoxConfigurationURV.Text, "[^,0-9]"))
+                {
+                    MessageBox.Show("Please only enter numbers.", "NAN Registered!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    textBoxConfigurationURV.Text = "";
+                    textBoxConfigurationURV.Focus();
+                }
             }
         }
 
@@ -1259,6 +1376,10 @@ namespace SoftSensConf
             {
                 textBoxConfigurationAlarmLow.Text = "0";
             }
+            if (Convert.ToInt32(textBoxConfigurationAlarmLow.Text) > 1000)
+            {
+                textBoxConfigurationAlarmLow.Text = "1000";
+            }
         }
 
         private void textBoxConfigurationAlarmHigh_Leave(object sender, EventArgs e)
@@ -1267,13 +1388,21 @@ namespace SoftSensConf
             {
                 textBoxConfigurationAlarmHigh.Text = "0";
             }
+            if (Convert.ToInt32(textBoxConfigurationAlarmHigh.Text) > 1000)
+            {
+                textBoxConfigurationAlarmHigh.Text = "1000";
+            }
         }
 
         private void textBoxConfigurationLRV_Leave(object sender, EventArgs e)
         {
             if (textBoxConfigurationLRV.Text == "")
             {
-                textBoxConfigurationLRV.Text = "0.0";
+                textBoxConfigurationLRV.Text = "0";
+            }
+            if (Convert.ToDouble(textBoxConfigurationLRV.Text) > 1000)
+            {
+                textBoxConfigurationLRV.Text = "1000";
             }
         }
 
@@ -1281,7 +1410,11 @@ namespace SoftSensConf
         {
             if (textBoxConfigurationURV.Text == "")
             {
-                textBoxConfigurationURV.Text = "0.0";
+                textBoxConfigurationURV.Text = "0";
+            }
+            if (Convert.ToDouble(textBoxConfigurationURV.Text) > 1000)
+            {
+                textBoxConfigurationURV.Text = "1000";
             }
         }
 
@@ -1298,6 +1431,18 @@ namespace SoftSensConf
         {
             if (GlobalDataContainerClass.ConnectivityStatus)
             {
+                if (GlobalDataContainerClass.LiveData)
+                {
+                    DialogResult DiaRes = MessageBox.Show("Sensor logging must be stopped before request can be sent to device.\r\nDo you want to stop logging and send request?", "Sensor logging active", MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+                    if (DiaRes == DialogResult.Yes)
+                    {
+                        buttonDashboardStopReceiving_Click(sender, e);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
                 StopAlarmRequest();
                 //Try to connect three times and update values if connected etc.
                 #region
@@ -1344,6 +1489,10 @@ namespace SoftSensConf
                             GlobalDataContainerClass.ChangedTabSize = true;
                             SaveConfigLogFile(); //Update config logfile
                             MessageBox.Show("Configuration successfully received from device!", "Success!", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                            //Reset datapoints
+                            buttonDashboardResetDatapoints_Click(sender, e);
+
                             return;
                         }
                         #endregion
@@ -1392,7 +1541,7 @@ namespace SoftSensConf
         {
             try
             {
-                if (GlobalDataContainerClass.ConnectivityStatus) ;
+                if (GlobalDataContainerClass.ConnectivityStatus);
                 {
                     comboBoxConfigurationSerialPorts.SelectedItem = GlobalDataContainerClass.PortNameChosen;
                 }
@@ -1498,9 +1647,9 @@ namespace SoftSensConf
 
 
                     //DEFAULT OR SELECTED URV
-                    if (GlobalDataContainerClass.DeviceURV == 0.0)
+                    if (GlobalDataContainerClass.DeviceURV == 0)
                     {
-                        textBoxConfigurationURV.Text = "0.0";
+                        textBoxConfigurationURV.Text = "0" + GlobalDataContainerClass.NumSeperator + "0";
                     }
                     else
                     {
@@ -1508,9 +1657,9 @@ namespace SoftSensConf
                     }
 
                     //DEFAULT OR SELECTED LRV
-                    if (GlobalDataContainerClass.DeviceLRV == 0.0)
+                    if (GlobalDataContainerClass.DeviceLRV == 0)
                     {
-                        textBoxConfigurationLRV.Text = "0.0";
+                        textBoxConfigurationLRV.Text = "0" + GlobalDataContainerClass.NumSeperator + "0" ;
                     }
                     else
                     {
@@ -1545,8 +1694,8 @@ namespace SoftSensConf
                 else
                 {
                     labelMainTitle.Text = "Dashboard";
-                    this.MinimumSize = new Size(960, 580);
-                    this.Size = new Size(960, 580);
+                    this.MinimumSize = new Size(967, 708);
+                    this.Size = new Size(967, 708);
                 }
                 #endregion
 
@@ -1630,8 +1779,8 @@ namespace SoftSensConf
             GlobalDataContainerClass.ConnectivityStatus = false;
             GlobalDataContainerClass.BaudRateChosen = 0;
             GlobalDataContainerClass.PortNameChosen = "N/A";
-            GlobalDataContainerClass.DeviceURV = 0.0;
-            GlobalDataContainerClass.DeviceLRV = 0.0;
+            GlobalDataContainerClass.DeviceURV = Double.Parse("0" + GlobalDataContainerClass.NumSeperator + "0");
+            GlobalDataContainerClass.DeviceLRV = Double.Parse("0" + GlobalDataContainerClass.NumSeperator + "0");
             GlobalDataContainerClass.DeviceALO = 0;
             GlobalDataContainerClass.DeviceAHI = 0;
             GlobalDataContainerClass.DeviceName = "";

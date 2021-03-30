@@ -74,11 +74,11 @@ namespace SoftSensConf
 
         private void textBoxRickAshley_Leave(object sender, EventArgs e)
         {
-            if (textBoxRickAshley.Text.Length!=8)
-            {
-                MessageBox.Show("Password length must be exactly 8 characters", "Length Requirement", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                textBoxRickAshley.Focus();
-            }
+            //if (textBoxRickAshley.Text.Length!=8)
+            //{
+            //   MessageBox.Show("Password length must be exactly 8 characters", "Length Requirement", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //   textBoxRickAshley.Focus();
+            //}
         }
     }
 }

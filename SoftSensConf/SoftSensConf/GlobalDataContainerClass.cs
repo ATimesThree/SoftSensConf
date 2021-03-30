@@ -9,6 +9,9 @@ namespace SoftSensConf
 {
     class GlobalDataContainerClass
     {
+        private static string v_SystemLang = "";
+        private static string v_NumSeperator = "";
+
         //General
         private static string v_DeviceName = "";
         private static bool v_ConnectivityStatus = false;
@@ -32,8 +35,8 @@ namespace SoftSensConf
         private static Int32 v_AlarmStatus = 0;
         private static bool v_AlarmRequested = false;
         private static bool v_AlarmReceived = false;
-        private static double v_DeviceURV = 0.0;
-        private static double v_DeviceLRV = 0.0;
+        private static double v_DeviceURV = 0;
+        private static double v_DeviceLRV = 0;
         private static Int32 v_DeviceAHI = 0;
         private static Int32 v_DeviceALO = 0;
 
@@ -47,6 +50,18 @@ namespace SoftSensConf
 
 
         #region
+        public static string NumSeperator
+        {
+            get { return v_NumSeperator; }
+            set { v_NumSeperator = value; }
+        }
+
+        public static string SystemLang
+        {
+            get { return v_SystemLang; }
+            set { v_SystemLang = value; }
+        }
+
         public static Int32 NumberOfDataPoints
         {
             get { return v_NumberOfDataPoints; }

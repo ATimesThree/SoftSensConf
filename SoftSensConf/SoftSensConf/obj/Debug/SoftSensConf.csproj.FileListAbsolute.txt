@@ -45,4 +45,3 @@ C:\Users\FoFFeX\Documents\GitHub\SoftSensConf\SoftSensConf\SoftSensConf\obj\Debu
 C:\Users\FoFFeX\Documents\GitHub\SoftSensConf\SoftSensConf\SoftSensConf\obj\Debug\SoftSensConf.application
 C:\Users\FoFFeX\Documents\GitHub\SoftSensConf\SoftSensConf\SoftSensConf\obj\Debug\SoftSensConf.exe
 C:\Users\FoFFeX\Documents\GitHub\SoftSensConf\SoftSensConf\SoftSensConf\obj\Debug\SoftSensConf.pdb
-C:\Users\FoFFeX\Documents\GitHub\SoftSensConf\SoftSensConf\SoftSensConf\obj\Debug\SoftSensConf.csprojAssemblyReference.cache
