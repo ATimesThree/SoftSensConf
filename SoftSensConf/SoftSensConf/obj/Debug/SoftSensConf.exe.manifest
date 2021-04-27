@@ -43,14 +43,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SoftSensConf.exe" size="665576">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SoftSensConf.exe" size="709096">
       <assemblyIdentity name="SoftSensConf" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>3bWu7g6+CLPU+neE1aHxt26vvxrKub0s3HtDK5pJRjE=</dsig:DigestValue>
+        <dsig:DigestValue>sszSKubfBElpneRknv26ZDXdnjK656Hl3u77ygcoL5g=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -63,13 +63,13 @@
       <dsig:DigestValue>VT5YQgA5CY9Sq+vPjRUHcEk7FZvl5nTFwUNmqQacgy8=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="SoftSensConf.exe.config" size="189">
+  <file name="SoftSensConf.exe.config" size="445">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>R+Wg8QGvQVHX8T0ta/qbhH1bXkqY0fRnS3wBV3J0bN8=</dsig:DigestValue>
+      <dsig:DigestValue>EJ75gnyJZ7tLNcsmbgQKIuXFg94N89sjqn2xEsnIrrs=</dsig:DigestValue>
     </hash>
   </file>
   <file name="softsenseconflogo_EW7_icon.ico" size="21822">

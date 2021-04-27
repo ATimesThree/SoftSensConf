@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.Configuration;
 
 namespace SoftSensConf
 {
@@ -16,6 +18,10 @@ namespace SoftSensConf
         {
             InitializeComponent();
         }
+        static string connectSoftSensDB = ConfigurationManager.ConnectionStrings["softSensDBConnectionString"].ConnectionString;
+        SqlConnection connect = new SqlConnection(connectSoftSensDB);
+
+
 
         /////////////// LOAD FORM ///////////////
         #region
@@ -50,6 +56,41 @@ namespace SoftSensConf
 
             labelSoftwareVersion.Text = "Version: " + GlobalDataContainerClass.SoftWareVersion;
             tabControlMain.SelectedTab = tabControlMain.TabPages["tabPageConfiguration"];
+
+            //Get RDC from database
+            #region
+            try
+            {
+                string sqlSelectQuery = "SELECT RDC.RDC_ID FROM RDC ORDER BY RDC_ID ASC";
+                SqlCommand command = new SqlCommand(sqlSelectQuery, connect);
+                connect.Open();
+
+                SqlDataReader rdcDataReader = command.ExecuteReader();
+
+                comboBoxSetupRDCID.Items.Clear();
+
+                while (rdcDataReader.Read())
+                {
+                    comboBoxSetupRDCID.Items.Add(rdcDataReader[0].ToString());
+                }
+
+                connect.Close();
+                comboBoxSetupRDCID.SelectedIndex = 0;
+
+            }
+
+            catch (Exception error)
+            {
+
+                MessageBox.Show("Error: " + error);
+            }
+
+            finally
+            {
+                connect.Close();
+            }
+            #endregion
+
         }
         #endregion
         /////////////////////////////////////////////
@@ -119,6 +160,7 @@ namespace SoftSensConf
                     MessageBox.Show("You just lost connection!", "DISCONNECTED!",MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     buttonConfigurationConnect.Focus();
 
+                    /*
                     comboBoxConfigurationSerialPorts.Items.Clear();
                     string[] comPorts = System.IO.Ports.SerialPort.GetPortNames();
                     foreach (string ports in comPorts)
@@ -126,7 +168,7 @@ namespace SoftSensConf
                         comboBoxConfigurationSerialPorts.Items.Add(ports);
                     }
                     comboBoxConfigurationSerialPorts.SelectedIndex = comboBoxConfigurationSerialPorts.Items.Count - 1;
-
+                    */
                 }
             }
 
@@ -141,6 +183,31 @@ namespace SoftSensConf
             if (GlobalDataContainerClass.DeviceName != textBoxMainUserName.Text)
             {
                 textBoxMainUserName.Text = GlobalDataContainerClass.DeviceName;
+            }
+
+            //Cant change RDC, DAU and Instrument while receiving data / Connected
+            if (GlobalDataContainerClass.ConnectivityStatus)
+            {
+                //Cant change DAU and RDC when connected to DAU
+                comboBoxSetupRDCID.Enabled = false;
+                comboBoxSetupDAUID.Enabled = false;
+                comboBoxSetupDAUDeviceName.Enabled = false;
+                //Cant change Instrument if receiving data
+                if (GlobalDataContainerClass.LiveData)
+                {
+                    comboBoxConfigurationTag.Enabled = false;
+                }
+                else
+                {
+                    comboBoxConfigurationTag.Enabled = true;
+                }
+
+            }
+            else
+            {
+                comboBoxSetupRDCID.Enabled = true;
+                comboBoxSetupDAUID.Enabled = true;
+                comboBoxSetupDAUDeviceName.Enabled = true;
             }
         }
 
@@ -238,7 +305,7 @@ namespace SoftSensConf
 
         private void textBoxDashboardDataType_MouseHover(object sender, EventArgs e)
         {
-            GlobalDataContainerClass.StatusBarText = "Scaled or raw data";
+            GlobalDataContainerClass.StatusBarText = "Analog, Digital etc";
         }
 
         private void textBoxDashboardDatapoints_MouseHover(object sender, EventArgs e)
@@ -405,35 +472,147 @@ namespace SoftSensConf
                         #region
                         else
                         {
-                            //textBoxDashboardFaultyData.Text = "";
-                            listBoxDashboardTextDataRaw.Items.Add(availableData);
-                            chartDashboardChartRaw.Series["RawData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataRaw.Items.Count - 1),
-                                                                  Convert.ToDouble(listBoxDashboardTextDataRaw.Items[listBoxDashboardTextDataRaw.Items.Count - 1]));
+                            
+                            int logID = AddInstrumentLog(GlobalDataContainerClass.DeviceName);
+                            if (logID > 0) //-1 is returned if AddInstrumentLog fails
+                            {
+                                // Update information according to data type
+                                switch (GlobalDataContainerClass.CommunicationType)
+                                {
 
-                            listBoxDashboardTextDataScaled.Items.Add(scaledDataConverter(availableData));
-                            chartDashboardChartScaled.Series["ScaledData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataScaled.Items.Count - 1),
-                                                                  Convert.ToDouble(listBoxDashboardTextDataScaled.Items[listBoxDashboardTextDataScaled.Items.Count - 1]));
+                                    case "Analog":
+                                        // Add data to raw and scaled graph
+                                        #region
+                                        //textBoxDashboardFaultyData.Text = "";
+                                        listBoxDashboardTextDataRaw.Items.Add(availableData);
+                                        chartDashboardChartRaw.Series["RawData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataRaw.Items.Count - 1),
+                                                                              Convert.ToDouble(listBoxDashboardTextDataRaw.Items[listBoxDashboardTextDataRaw.Items.Count - 1]));
 
-                            GlobalDataContainerClass.NumberOfDataPoints += 1;
+                                        listBoxDashboardTextDataScaled.Items.Add(scaledDataConverter(availableData));
+                                        chartDashboardChartScaled.Series["ScaledData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataScaled.Items.Count - 1),
+                                                                              Convert.ToDouble(listBoxDashboardTextDataScaled.Items[listBoxDashboardTextDataScaled.Items.Count - 1]));
+
+                                        GlobalDataContainerClass.NumberOfDataPoints += 1;
+                                        #endregion
+
+                                        // Fix listbox view regardless
+                                        #region
+                                        if (listBoxDashboardTextDataRaw.Items.Count > 1)
+                                        {
+                                            listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, true);
+                                            listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, false);
+                                        }
+
+                                        if (listBoxDashboardTextDataScaled.Items.Count > 1)
+                                        {
+                                            listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, true);
+                                            listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, false);
+                                        }
+                                        #endregion
+
+                                        // Update reading in DB based on selected datatype
+                                        #region
+
+                                        // Differenciate between Analog input and Analog output
+                                        switch (GlobalDataContainerClass.IOType)
+                                        {
+                                            case "Output":
+                                                #region
+                                                string sqlInsertQuery = "INSERT INTO LOG_AO (Log_ID, ReadingValue, DataType_ID) VALUES (@id, @value, @DataType)";
+
+                                                SqlCommand command = new SqlCommand(sqlInsertQuery, connect);
+
+                                                command.Parameters.AddWithValue("@id", logID);
+                                                // Alter reading and data id based on selected view (Scaled or raw)
+                                                #region
+                                                switch (GlobalDataContainerClass.ScaledDataType)
+                                                {
+                                                    //Scaled value selected
+                                                    case true:
+                                                        command.Parameters.AddWithValue("@value", scaledDataConverter(availableData));
+                                                        command.Parameters.AddWithValue("@DataType", 1); // Scaled has DataType_ID 1
+                                                        break;
+
+                                                    //Raw value selected
+                                                    case false:
+                                                        command.Parameters.AddWithValue("@value", availableData);
+                                                        command.Parameters.AddWithValue("@DataType", 2); // Raw has DataType_ID 2
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                                #endregion
+
+                                                connect.Open();
+
+                                                command.ExecuteNonQuery();
+
+                                                connect.Close();
+                                                #endregion
+                                                break;
+
+                                            case "Input":
+                                                #region
+                                                sqlInsertQuery = "INSERT INTO LOG_AI (Log_ID, SendingValue, DataType_ID, AI_Executed) VALUES (@id, @value, @DataType, @executed)";
+
+                                                command = new SqlCommand(sqlInsertQuery, connect);
+
+                                                command.Parameters.AddWithValue("@id", logID);
+                                                command.Parameters.AddWithValue("@executed", 0); //Not implemented so using 0 as default
+                                                // Alter reading and data id based on selected view (Scaled or raw)
+                                                #region
+                                                switch (GlobalDataContainerClass.ScaledDataType)
+                                                {
+                                                    //Scaled value selected
+                                                    case true:
+                                                        command.Parameters.AddWithValue("@value", scaledDataConverter(availableData));
+                                                        command.Parameters.AddWithValue("@DataType", 1); // Scaled has DataType_ID 1
+                                                        break;
+
+                                                    //Raw value selected
+                                                    case false:
+                                                        command.Parameters.AddWithValue("@value", availableData);
+                                                        command.Parameters.AddWithValue("@DataType", 2); // Raw has DataType_ID 2
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                                #endregion
+
+                                                connect.Open();
+
+                                                command.ExecuteNonQuery();
+
+                                                connect.Close();
+                                                #endregion
+                                                break;
+
+                                            default:
+                                                // Nothing
+                                                break;
+                                        }
+                                        break;
+                                    #endregion
+
+                                    case "Digital":
+
+
+
+                                        break;
+
+                                    default:
+                                        // Any other type or reading
+                                        break;
+
+                                }
+                            }
+
                         }
-                        #endregion
-                    }
-
-                    // Fix listbox view
-                    #region
-                    if (listBoxDashboardTextDataRaw.Items.Count > 1)
-                    {
-                        listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, true);
-                        listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, false);
-                    }
-
-                    if (listBoxDashboardTextDataScaled.Items.Count > 1)
-                    {
-                        listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, true);
-                        listBoxDashboardTextDataScaled.SetSelected(listBoxDashboardTextDataScaled.Items.Count - 1, false);
+                        
                     }
                     #endregion
                 }
+
                 // Update so loop continues
                 timerDataChartUpdater.Enabled = false;
                 timerSerialDataRequester.Enabled = true;
@@ -593,10 +772,6 @@ namespace SoftSensConf
         #region
         private void timerDashboardDataInformation_Tick(object sender, EventArgs e)
         {
-            textBoxDashboardPortName.Text = GlobalDataContainerClass.PortNameChosen;
-            textBoxDashboardBaudRate.Text = GlobalDataContainerClass.BaudRateChosen.ToString();
-            textBoxDashboardDatapoints.Text = GlobalDataContainerClass.NumberOfDataPoints.ToString();
-
             if (GlobalDataContainerClass.ConnectivityStatus)
             {
                 textBoxDashboardConnectivityStatus.Text = "Connected";
@@ -617,7 +792,6 @@ namespace SoftSensConf
 
             if (GlobalDataContainerClass.ScaledDataType)
             {
-                textBoxDashboardDataType.Text = "Scaled Data";
                 chartDashboardChartScaled.Visible = true;
                 chartDashboardChartRaw.Visible = false;
                 listBoxDashboardTextDataScaled.Visible = true;
@@ -625,13 +799,16 @@ namespace SoftSensConf
             }
             else
             {
-                textBoxDashboardDataType.Text = "Raw Data";
                 chartDashboardChartScaled.Visible = false;
                 chartDashboardChartRaw.Visible = true;
                 listBoxDashboardTextDataScaled.Visible = false;
                 listBoxDashboardTextDataRaw.Visible = true;
             }
-
+            textBoxDashboardPortName.Text = GlobalDataContainerClass.PortNameChosen;
+            textBoxDashboardBaudRate.Text = GlobalDataContainerClass.BaudRateChosen.ToString();
+            textBoxDashboardDatapoints.Text = GlobalDataContainerClass.NumberOfDataPoints.ToString();
+            textBoxDashboardDataType.Text = GlobalDataContainerClass.CommunicationType;
+            textBoxDashboardFrequency.Text = GlobalDataContainerClass.ScanningFrequency.ToString();
             textBoxDashboardLRV.Text = GlobalDataContainerClass.DeviceLRV.ToString();
             textBoxDashboardURV.Text = GlobalDataContainerClass.DeviceURV.ToString();
             textBoxDashboardAlarmHigh.Text = GlobalDataContainerClass.DeviceAHI.ToString();
@@ -697,12 +874,14 @@ namespace SoftSensConf
         #region
         private void comboBoxConfigurationSerialPorts_Enter(object sender, EventArgs e)
         {
+            
             comboBoxConfigurationSerialPorts.Items.Clear();
             string[] comPorts = System.IO.Ports.SerialPort.GetPortNames();
             foreach (string ports in comPorts)
             {
                 comboBoxConfigurationSerialPorts.Items.Add(ports);
             }
+            
         }
         #endregion
 
@@ -731,20 +910,29 @@ namespace SoftSensConf
         private void buttonConfigurationConnect_Click(object sender, EventArgs e)
         {
             try { 
-                if (comboBoxConfigurationSerialPorts.SelectedIndex >= 0
+                if (textBoxSetupDAUComPort.Text != ""
                     && GlobalDataContainerClass.ConnectivityStatus == false)
                 {
-                    serialPortMain.PortName = comboBoxConfigurationSerialPorts.Items[comboBoxConfigurationSerialPorts.SelectedIndex].ToString();
+                    serialPortMain.PortName = textBoxSetupDAUComPort.Text;
 
-                    if (comboBoxConfigurationSerialPorts.SelectedIndex >= 0)
+                    if (textBoxSetupDAUComPort.Text != "")
                     {
-                        serialPortMain.BaudRate = Convert.ToInt32(comboBoxConfigurationChoseBaudRate.Items[comboBoxConfigurationChoseBaudRate.SelectedIndex]);
+                        serialPortMain.BaudRate = Convert.ToInt32(textBoxSetupDAUBaudRate.Text);
                         serialPortMain.Open();
 
-                        // Add Portname and baud rate since you're connected
+                        // Add global variables since you're connected
                         #region
-                        GlobalDataContainerClass.BaudRateChosen = Convert.ToInt32(comboBoxConfigurationChoseBaudRate.Items[comboBoxConfigurationChoseBaudRate.SelectedIndex]);
-                        GlobalDataContainerClass.PortNameChosen = comboBoxConfigurationSerialPorts.Items[comboBoxConfigurationSerialPorts.SelectedIndex].ToString();
+                        GlobalDataContainerClass.BaudRateChosen = Convert.ToInt32(textBoxSetupDAUBaudRate.Text);
+                        GlobalDataContainerClass.PortNameChosen = textBoxSetupDAUComPort.Text;
+                        GlobalDataContainerClass.DeviceName = comboBoxConfigurationTag.SelectedItem.ToString();
+                        GlobalDataContainerClass.DeviceLRV = Convert.ToDouble(textBoxConfigurationLRV.Text);
+                        GlobalDataContainerClass.DeviceURV = Convert.ToDouble(textBoxConfigurationLRV.Text);
+                        GlobalDataContainerClass.DeviceALO = Convert.ToInt32(textBoxConfigurationAlarmLow.Text);
+                        GlobalDataContainerClass.DeviceAHI = Convert.ToInt32(textBoxConfigurationAlarmHigh.Text);
+                        GlobalDataContainerClass.IOType = textBoxConfigurationIType.Text;
+                        GlobalDataContainerClass.CommunicationType = textBoxConfigurationCommunicationType.Text;
+                        GlobalDataContainerClass.ScanningFrequency = Convert.ToDouble(textBoxConfigurationScanningFrequency.Text);
+                        
 
                         //Start Status checking
                         textBoxDashboardError.Text = ""; //Reset text
@@ -759,6 +947,7 @@ namespace SoftSensConf
             }
             finally
             {
+                /*
                 comboBoxConfigurationSerialPorts.Items.Clear();
                 string[] comPorts = System.IO.Ports.SerialPort.GetPortNames();
                 foreach (string ports in comPorts)
@@ -767,6 +956,7 @@ namespace SoftSensConf
                 }
                 comboBoxConfigurationSerialPorts.SelectedIndex = comboBoxConfigurationSerialPorts.Items.Count - 1;
                 comboBoxConfigurationSerialPorts.Focus();
+                */
             }
         }
         #endregion
@@ -780,8 +970,8 @@ namespace SoftSensConf
             buttonDashboardResetDatapoints_Click(sender, e);
             WaitNSeconds(1);
             serialPortMain.Close(); //Disconnect from port
-            comboBoxConfigurationSerialPorts.Focus();
-            comboBoxConfigurationSerialPorts.SelectedIndex = (comboBoxConfigurationSerialPorts.Items.Count - 1);
+            buttonConfigurationConnect.Focus();
+            //comboBoxConfigurationSerialPorts.SelectedIndex = (comboBoxConfigurationSerialPorts.Items.Count - 1);
         }
         #endregion
 
@@ -809,7 +999,7 @@ namespace SoftSensConf
                 GlobalDataContainerClass.StatusBarText = "";
                 // Creating partial string to be sent
                 #region
-                GlobalDataContainerClass.configToBeSent = textBoxConfigurationDeviceName.Text + ";"
+                GlobalDataContainerClass.configToBeSent = comboBoxConfigurationTag.SelectedItem.ToString() + ";"
                                                               + textBoxConfigurationLRV.Text + ";"
                                                               + textBoxConfigurationURV.Text + ";"
                                                               + textBoxConfigurationAlarmLow.Text + ";"
@@ -818,7 +1008,7 @@ namespace SoftSensConf
 
                 // Check if required fields are filled or same as existing configuration
                 #region
-                if (textBoxConfigurationDeviceName.Text.Length == 0)
+                if (comboBoxConfigurationTag.SelectedItem.ToString().Length == 0)
                 {
                     MessageBox.Show("Device name is blank", "Device name", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     textBoxConfigurationDeviceName.Focus();
@@ -903,6 +1093,37 @@ namespace SoftSensConf
 
                                     //Reset datapoints
                                     buttonDashboardResetDatapoints_Click(sender, e);
+
+                                    // Update DAU Updated Date
+                                    #region
+                                    try
+                                    {
+                                        string instrumentUpdatedDate = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                                        string sqlSelectQuery = "UPDATE [INSTRUMENT] SET [LastUpdatedDate] = @NewValue WHERE Tag = '" + comboBoxConfigurationTag.SelectedItem.ToString() +"'";
+                                        SqlCommand command = new SqlCommand(sqlSelectQuery, connect);
+
+
+                                        
+                                        command.Parameters.Add("@NewValue", SqlDbType.DateTime).Value = instrumentUpdatedDate;
+
+                                        connect.Open();
+
+                                        command.ExecuteNonQuery();
+
+                                        connect.Close();
+
+                                        // Update text field without making a uneccessary request.
+                                        textBoxConfigurationLastUpdated.Text = instrumentUpdatedDate;
+                                    }
+                                    catch (Exception error)
+                                    {
+                                        MessageBox.Show("Update fail. Error: " + error);
+                                    }
+                                    finally
+                                    {
+                                        connect.Close();
+                                    }
+                                    #endregion
 
                                     return;
                                 }
@@ -1555,6 +1776,7 @@ namespace SoftSensConf
 
         private void comboBoxConfigurationChoseBaudRate_Leave(object sender, EventArgs e)
         {
+            /*
             try
             {
                 if (GlobalDataContainerClass.ConnectivityStatus) ;
@@ -1567,6 +1789,7 @@ namespace SoftSensConf
                 comboBoxConfigurationChoseBaudRate.SelectedIndex = comboBoxConfigurationChoseBaudRate.Items.Count - 1;
                 throw;
             }
+            */
 
         }
         #endregion
@@ -1599,8 +1822,14 @@ namespace SoftSensConf
                 if (tabControlMain.SelectedTab == tabControlMain.TabPages["tabPageConfiguration"])
                 {
                     labelMainTitle.Text = "Setup && Config";
-                    this.MinimumSize = new Size(550, 580);
-                    this.Size = new Size(550, 580);
+                    this.MinimumSize = new Size(860, 570);
+                    this.Size = new Size(860, 570);
+
+                    // If not connected, select first RDC as default
+                    if (GlobalDataContainerClass.ConnectivityStatus == false)
+                    {
+                        
+                    }
 
                     // LOAD DATA FROM DEVICE
                     if (GlobalDataContainerClass.ConnectivityStatus)
@@ -1610,6 +1839,7 @@ namespace SoftSensConf
 
 
                     // DEFAULT OR SELECTED BAUD RATE
+                    /*
                     if (GlobalDataContainerClass.BaudRateChosen == 0)
                     {
                         comboBoxConfigurationChoseBaudRate.SelectedIndex = 2;
@@ -1618,6 +1848,7 @@ namespace SoftSensConf
                     {
                         comboBoxConfigurationChoseBaudRate.SelectedIndex = comboBoxConfigurationChoseBaudRate.FindString(GlobalDataContainerClass.BaudRateChosen.ToString());
                     }
+                    */
 
                     //DEFAULT OR SELECTED PORTNAME
                     if (GlobalDataContainerClass.PortNameChosen == "N/A")
@@ -1786,6 +2017,9 @@ namespace SoftSensConf
             GlobalDataContainerClass.DeviceName = "";
             GlobalDataContainerClass.configReceived = "";
             GlobalDataContainerClass.configToBeSent = "";
+            GlobalDataContainerClass.CommunicationType = "";
+            GlobalDataContainerClass.IOType = "";
+            GlobalDataContainerClass.ScanningFrequency = 1;
             GlobalDataContainerClass.LiveData = false;
             StopAlarmRequest();
 
@@ -1886,10 +2120,311 @@ namespace SoftSensConf
 
         //CLOSE FROM MENU
         #region
+        #endregion
+
+
+
+        // SQL Commands
+        #region
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
         }
+
+
+        private void comboBoxSetupRDCID_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //Update RDC Info
+            #region
+            try
+            {
+                string sqlSelectQuery = "" +
+                "SELECT IPv4Address "+
+                "FROM dbo.RDC "+
+                "WHERE RDC_ID = " + comboBoxSetupRDCID.SelectedItem.ToString();
+
+                SqlCommand command = new SqlCommand(sqlSelectQuery, connect);
+                connect.Open();
+
+                SqlDataReader rdcDataReader = command.ExecuteReader();
+
+                while (rdcDataReader.Read())
+                {
+                    textBoxSetupRDCIPAddress.Text = rdcDataReader[0].ToString();
+                }
+
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Error: " + error);
+            }
+            finally
+            {
+                connect.Close();
+            }
+            #endregion
+
+
+
+            //Update DAU Dropdown list
+            #region
+            try
+            {
+                string sqlSelectQuery = "SELECT DAU.DAU_ID, DAU.DeviceName " +
+                    "FROM DAU " +
+                    "WHERE DAU.RDC_ID = " + comboBoxSetupRDCID.SelectedItem.ToString() + " " +
+                    "ORDER BY DAU_ID ASC";
+
+                SqlCommand command = new SqlCommand(sqlSelectQuery, connect);
+                connect.Open();
+
+                SqlDataReader rdcDataReader = command.ExecuteReader();
+
+                comboBoxSetupDAUID.Items.Clear();
+                comboBoxSetupDAUDeviceName.Items.Clear();
+
+                while (rdcDataReader.Read())
+                {
+                    comboBoxSetupDAUID.Items.Add(rdcDataReader[0].ToString());
+                    comboBoxSetupDAUDeviceName.Items.Add(rdcDataReader[1].ToString());
+                }
+                connect.Close();
+
+                comboBoxSetupDAUID.SelectedIndex = 0;
+                comboBoxSetupDAUDeviceName.SelectedIndex = 0;
+            }
+            catch (Exception error)
+            {
+
+                MessageBox.Show("Error: " + error);
+            }
+            finally
+            {
+                connect.Close();
+            }
+            #endregion
+
+        }
+
+        // Change DAU ID if DeviceName is changed
+        #region
+        private void comboBoxSetupDAUDeviceName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            comboBoxSetupDAUID.SelectedIndex = comboBoxSetupDAUDeviceName.SelectedIndex;
+        }
+        #endregion
+
+
+        private void comboBoxSetupDAUID_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Update DAU Fields
+            #region
+            try
+            {
+                string sqlSelectQuery = "" +
+                "SELECT DAU.DeviceName, DAU.ComPort, BAUDRATE.BaudRate, DAU.InstallmentDate, DAU.LastUpdatedDate, AREA.AreaCode, FACILITY.FacilityName, COUNTRY.Country " +
+                "FROM DAU INNER JOIN BAUDRATE ON DAU.BaudRate_ID = BAUDRATE.BaudRate_ID INNER JOIN " +
+                "AREA ON DAU.Area_ID = AREA.Area_ID INNER JOIN " +
+                "FACILITY ON AREA.Facility_ID = FACILITY.Facility_ID INNER JOIN " +
+                "COUNTRY ON FACILITY.Country_ID = COUNTRY.Country_ID " +
+                "WHERE DAU_ID = " + comboBoxSetupDAUID.SelectedItem.ToString();
+
+                SqlCommand command = new SqlCommand(sqlSelectQuery, connect);
+                connect.Open();
+
+                SqlDataReader rdcDataReader = command.ExecuteReader();
+
+                while (rdcDataReader.Read())
+                {
+                    comboBoxSetupDAUDeviceName.SelectedItem = rdcDataReader[0].ToString();
+                    textBoxSetupDAUComPort.Text = rdcDataReader[1].ToString();
+                    textBoxSetupDAUBaudRate.Text = rdcDataReader[2].ToString();
+                    textBoxSetupDAUInstallmentDate.Text = rdcDataReader[3].ToString();
+                    textBoxSetupDAULastUpdated.Text = rdcDataReader[4].ToString();
+                    textBoxSetupDAUAreaCode.Text = rdcDataReader[5].ToString();
+                    textBoxSetupDAUFacility.Text = rdcDataReader[6].ToString();
+                    textBoxSetupDAUCountry.Text = rdcDataReader[7].ToString();
+                }
+                connect.Close();
+            }
+            catch (Exception error)
+            {
+
+                MessageBox.Show("Error: " + error);
+            }
+            finally
+            {
+                connect.Close();
+            }
+            #endregion
+
+
+            //Update Instrument Dropdown list
+            #region
+            try
+            {
+                string sqlSelectQuery = "SELECT INSTRUMENT.Tag " +
+                    "FROM INSTRUMENT " +
+                    "WHERE INSTRUMENT.DAU_ID = " + comboBoxSetupDAUID.SelectedItem.ToString() + " " +
+                    "ORDER BY Tag ASC";
+
+                SqlCommand command = new SqlCommand(sqlSelectQuery, connect);
+                connect.Open();
+
+                SqlDataReader rdcDataReader = command.ExecuteReader();
+
+                comboBoxConfigurationTag.Items.Clear();
+
+                while (rdcDataReader.Read())
+                {
+                    comboBoxConfigurationTag.Items.Add(rdcDataReader[0].ToString());
+                }
+                connect.Close();
+
+                comboBoxConfigurationTag.SelectedIndex = 0;
+            }
+            catch (System.ArgumentOutOfRangeException)
+            {
+                MessageBox.Show("No Instruments connected to selected DAU!", "No Instrument", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                comboBoxConfigurationTag.Items.Clear();
+                comboBoxConfigurationTag.Text = "";
+            }
+            catch (Exception error)
+            {
+
+                MessageBox.Show("Error: " + error);
+            }
+            finally
+            {
+                connect.Close();
+            }
+            #endregion
+
+        }
+
+        private void comboBoxConfigurationDeviceName_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Reset dashboard data
+            buttonDashboardResetDatapoints_Click(sender, e);
+            #region
+            try
+            {
+                string sqlSelectQuery = "" +
+                "SELECT INSTRUMENT.LowerRangeValue, INSTRUMENT.UpperRangeValue, INSTRUMENT.AlarmLow, INSTRUMENT.AlarmHigh, IOTYPE.IOType, SCANNINGFREQUENCY.ScanningFrequency, " +
+                "AREA.AreaCode, FACILITY.FacilityName, COUNTRY.Country, COMMUNICATION.CommunicationType, LastUpdatedDate " +
+                "FROM INSTRUMENT INNER JOIN " +
+                "IOTYPE ON INSTRUMENT.IOType_ID = IOTYPE.IOType_ID INNER JOIN " +
+                "SCANNINGFREQUENCY ON INSTRUMENT.ScanningFrequency_ID = SCANNINGFREQUENCY.ScanningFrequency_ID INNER JOIN " +
+                "AREA ON INSTRUMENT.Area_ID = AREA.Area_ID INNER JOIN " +
+                "FACILITY ON AREA.Facility_ID = FACILITY.Facility_ID INNER JOIN " +
+                "COUNTRY ON FACILITY.Country_ID = COUNTRY.Country_ID INNER JOIN " +
+                "COMMUNICATION ON INSTRUMENT.Communication_ID = COMMUNICATION.Communication_ID " +
+                "WHERE INSTRUMENT.Tag = '" + comboBoxConfigurationTag.SelectedItem.ToString() + "'";
+                
+                SqlCommand command = new SqlCommand(sqlSelectQuery, connect);
+                connect.Open();
+
+                SqlDataReader rdcDataReader = command.ExecuteReader();
+
+                while (rdcDataReader.Read())
+                {
+                    textBoxConfigurationLRV.Text = rdcDataReader[0].ToString();
+                    textBoxConfigurationURV.Text = rdcDataReader[1].ToString();
+                    textBoxConfigurationAlarmLow.Text = rdcDataReader[2].ToString();
+                    textBoxConfigurationAlarmHigh.Text = rdcDataReader[3].ToString();
+                    textBoxConfigurationIType.Text = rdcDataReader[4].ToString();
+                    textBoxConfigurationScanningFrequency.Text = rdcDataReader[5].ToString();
+                    textBoxConfigurationAreaCode.Text = rdcDataReader[6].ToString();
+                    textBoxConfigurationFacility.Text = rdcDataReader[7].ToString();
+                    textBoxConfigurationCountry.Text = rdcDataReader[8].ToString();
+                    textBoxConfigurationCommunicationType.Text = rdcDataReader[9].ToString();
+                    textBoxConfigurationLastUpdated.Text = rdcDataReader[10].ToString();
+                }
+                connect.Close();
+
+                // Add values to global values
+
+            }
+            catch (Exception error)
+            {
+
+                MessageBox.Show("Error: " + error);
+            }
+            finally
+            {
+                connect.Close();
+            }
+
+            //Update global variables if connected
+            if (GlobalDataContainerClass.ConnectivityStatus)
+            {
+                GlobalDataContainerClass.DeviceName = comboBoxConfigurationTag.SelectedItem.ToString();
+                GlobalDataContainerClass.DeviceLRV = Convert.ToDouble(textBoxConfigurationLRV.Text);
+                GlobalDataContainerClass.DeviceURV = Convert.ToDouble(textBoxConfigurationURV.Text);
+                GlobalDataContainerClass.DeviceALO = Convert.ToInt32(textBoxConfigurationAlarmLow.Text);
+                GlobalDataContainerClass.DeviceAHI = Convert.ToInt32(textBoxConfigurationAlarmHigh.Text);
+                GlobalDataContainerClass.IOType = textBoxConfigurationIType.Text;
+                GlobalDataContainerClass.ScanningFrequency = Convert.ToDouble(textBoxConfigurationScanningFrequency.Text);
+                GlobalDataContainerClass.CommunicationType = textBoxConfigurationCommunicationType.Text;
+            }
+            #endregion
+            
+            
+        }
+
+
+        private void textBoxSetupDAUBaudRate_MouseHover(object sender, EventArgs e)
+        {
+            GlobalDataContainerClass.StatusBarText = "Select baud rate";
+        }
+
+        private void textBoxSetupDAUComPort_MouseHover(object sender, EventArgs e)
+        {
+            GlobalDataContainerClass.StatusBarText = "Select communication port";
+        }
+
+        private void textBoxDashboardFrequency_MouseHover(object sender, EventArgs e)
+        {
+            GlobalDataContainerClass.StatusBarText = "Scanning frequency in Hz";
+        }
+
+
+        private int AddInstrumentLog(string tagname)
+        {
+            try
+            {
+                string sqlInsertQuery = "INSERT INTO INSTRUMENTLOG (Tag, LogTimestamp) output INSERTED.Log_ID VALUES (@tag, @ts)";
+
+                SqlCommand command = new SqlCommand(sqlInsertQuery, connect);
+
+                command.Parameters.AddWithValue("@tag", tagname);
+                command.Parameters.AddWithValue("@ts", DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss"));
+                connect.Open();
+
+                int modified = (int)command.ExecuteScalar();
+                
+                connect.Close();
+
+                return modified;
+            }
+            catch (Exception error)
+            {
+                MessageBox.Show("Error: " + error);
+                return -1;
+            }
+            finally
+            {
+                connect.Close();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            int testings = AddInstrumentLog(GlobalDataContainerClass.DeviceName);
+            label4.Text = testings.ToString();
+        }
+
+
         #endregion
 
         #endregion

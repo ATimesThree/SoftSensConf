@@ -47,9 +47,34 @@ namespace SoftSensConf
         //Config stuff
         private static string v_configToBeSent = "";
         private static string v_configReceived = "";
+        private static double v_ScanningFrequency = 1;
+        private static string v_IOType = "";
+        private static string v_CommunicationType = "";
+        
+
 
 
         #region
+
+
+        public static double ScanningFrequency
+        {
+            get { return v_ScanningFrequency; }
+            set { v_ScanningFrequency = value; }
+        }
+
+        public static string IOType
+        {
+            get { return v_IOType; }
+            set { v_IOType = value; }
+        }
+
+        public static string CommunicationType
+        {
+            get { return v_CommunicationType; }
+            set { v_CommunicationType = value; }
+        }
+
         public static string NumSeperator
         {
             get { return v_NumSeperator; }
