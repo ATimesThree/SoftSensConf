@@ -759,6 +759,25 @@ namespace SoftSensConf
             {
                 if (GlobalDataContainerClass.LiveData == false)
                 {
+                    // Fix data logging frequency
+                    #region
+                    if (GlobalDataContainerClass.ScanningFrequency <= 0) //Fail safe
+                    {
+                        MessageBox.Show("Logging frequency not valid. Please use a frequency thats above zero Hz.",
+                                        "Frequency not valid",
+                                        MessageBoxButtons.OK,
+                                        MessageBoxIcon.Error);
+                        
+                        return; // Stop program from logging
+                    }
+                    
+                    else // Change timers to match frequency requested
+                    {
+                        Int32 newFrequency = Convert.ToInt32(Math.Round(((1 / GlobalDataContainerClass.ScanningFrequency) * 1000),0));
+                        timerSerialDataRequester.Interval = timerDataChartUpdater.Interval = newFrequency;
+                    }
+                    #endregion
+
                     GlobalDataContainerClass.LiveData = true;
                     timerSerialDataRequester.Enabled = true;
                     timerAlarmRequester.Enabled = true;
