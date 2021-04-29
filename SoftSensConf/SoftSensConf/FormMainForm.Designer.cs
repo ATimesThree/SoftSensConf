@@ -38,8 +38,6 @@ namespace SoftSensConf
             System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.panelMainMenu = new System.Windows.Forms.Panel();
-            this.label4 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
             this.buttonMenuBarExit = new System.Windows.Forms.Button();
             this.buttonMenuBarConfiguration = new System.Windows.Forms.Button();
             this.buttonDashboard = new System.Windows.Forms.Button();
@@ -255,8 +253,6 @@ namespace SoftSensConf
             // panelMainMenu
             // 
             this.panelMainMenu.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(238)))), ((int)(((byte)(238)))), ((int)(((byte)(238)))));
-            this.panelMainMenu.Controls.Add(this.label4);
-            this.panelMainMenu.Controls.Add(this.button1);
             this.panelMainMenu.Controls.Add(this.buttonMenuBarExit);
             this.panelMainMenu.Controls.Add(this.buttonMenuBarConfiguration);
             this.panelMainMenu.Controls.Add(this.buttonDashboard);
@@ -267,25 +263,6 @@ namespace SoftSensConf
             this.panelMainMenu.Name = "panelMainMenu";
             this.panelMainMenu.Size = new System.Drawing.Size(186, 669);
             this.panelMainMenu.TabIndex = 99;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(61, 422);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(35, 13);
-            this.label4.TabIndex = 94;
-            this.label4.Text = "label4";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(61, 317);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 93;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // buttonMenuBarExit
             // 
@@ -636,7 +613,7 @@ namespace SoftSensConf
             this.tabControlMain.Controls.Add(this.tabPageConfiguration);
             this.tabControlMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlMain.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tabControlMain.ItemSize = new System.Drawing.Size(15, 15);
+            this.tabControlMain.ItemSize = new System.Drawing.Size(0, 1);
             this.tabControlMain.Location = new System.Drawing.Point(0, 0);
             this.tabControlMain.Margin = new System.Windows.Forms.Padding(0);
             this.tabControlMain.Multiline = true;
@@ -657,10 +634,10 @@ namespace SoftSensConf
             this.tabPageDashboard.Controls.Add(this.panelDashboardControl);
             this.tabPageDashboard.Controls.Add(this.panelDashboardDataInformation);
             this.tabPageDashboard.Controls.Add(this.panelDashboardChart);
-            this.tabPageDashboard.Location = new System.Drawing.Point(19, 4);
+            this.tabPageDashboard.Location = new System.Drawing.Point(5, 4);
             this.tabPageDashboard.Name = "tabPageDashboard";
             this.tabPageDashboard.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDashboard.Size = new System.Drawing.Size(742, 587);
+            this.tabPageDashboard.Size = new System.Drawing.Size(756, 587);
             this.tabPageDashboard.TabIndex = 0;
             // 
             // panel4
@@ -676,7 +653,7 @@ namespace SoftSensConf
             this.panel4.Controls.Add(this.textBoxDashboardFaultyData);
             this.panel4.Controls.Add(this.pictureBox5);
             this.panel4.Controls.Add(this.pictureBox6);
-            this.panel4.Location = new System.Drawing.Point(508, 213);
+            this.panel4.Location = new System.Drawing.Point(522, 213);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(225, 126);
             this.panel4.TabIndex = 1;
@@ -797,7 +774,7 @@ namespace SoftSensConf
             // 
             this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(204)))));
-            this.panel2.Location = new System.Drawing.Point(483, 213);
+            this.panel2.Location = new System.Drawing.Point(497, 213);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(253, 133);
             this.panel2.TabIndex = 46;
@@ -817,7 +794,7 @@ namespace SoftSensConf
             this.panelDashboardControl.Controls.Add(this.label2);
             this.panelDashboardControl.Location = new System.Drawing.Point(8, 6);
             this.panelDashboardControl.Name = "panelDashboardControl";
-            this.panelDashboardControl.Size = new System.Drawing.Size(477, 187);
+            this.panelDashboardControl.Size = new System.Drawing.Size(491, 187);
             this.panelDashboardControl.TabIndex = 8;
             this.panelDashboardControl.TabStop = true;
             // 
@@ -834,7 +811,7 @@ namespace SoftSensConf
             this.listBoxDashboardTextDataScaled.Location = new System.Drawing.Point(168, 8);
             this.listBoxDashboardTextDataScaled.Name = "listBoxDashboardTextDataScaled";
             this.listBoxDashboardTextDataScaled.ScrollAlwaysVisible = true;
-            this.listBoxDashboardTextDataScaled.Size = new System.Drawing.Size(291, 124);
+            this.listBoxDashboardTextDataScaled.Size = new System.Drawing.Size(305, 124);
             this.listBoxDashboardTextDataScaled.TabIndex = 14;
             this.listBoxDashboardTextDataScaled.TabStop = false;
             this.listBoxDashboardTextDataScaled.MouseLeave += new System.EventHandler(this.resetStatusBarText);
@@ -850,7 +827,7 @@ namespace SoftSensConf
             this.buttonDashboardSaveFile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonDashboardSaveFile.Font = new System.Drawing.Font("Nirmala UI", 9.75F, System.Drawing.FontStyle.Bold);
             this.buttonDashboardSaveFile.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(204)))));
-            this.buttonDashboardSaveFile.Location = new System.Drawing.Point(271, 137);
+            this.buttonDashboardSaveFile.Location = new System.Drawing.Point(285, 137);
             this.buttonDashboardSaveFile.Name = "buttonDashboardSaveFile";
             this.buttonDashboardSaveFile.Size = new System.Drawing.Size(42, 33);
             this.buttonDashboardSaveFile.TabIndex = 3;
@@ -868,7 +845,7 @@ namespace SoftSensConf
             this.buttonDashboardResetDatapoints.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonDashboardResetDatapoints.Font = new System.Drawing.Font("Nirmala UI", 9.75F, System.Drawing.FontStyle.Bold);
             this.buttonDashboardResetDatapoints.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(204)))));
-            this.buttonDashboardResetDatapoints.Location = new System.Drawing.Point(387, 136);
+            this.buttonDashboardResetDatapoints.Location = new System.Drawing.Point(401, 136);
             this.buttonDashboardResetDatapoints.Name = "buttonDashboardResetDatapoints";
             this.buttonDashboardResetDatapoints.Size = new System.Drawing.Size(72, 34);
             this.buttonDashboardResetDatapoints.TabIndex = 5;
@@ -888,7 +865,7 @@ namespace SoftSensConf
             this.buttonDashboardSaveGraphImage.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.buttonDashboardSaveGraphImage.Font = new System.Drawing.Font("Nirmala UI", 9.75F, System.Drawing.FontStyle.Bold);
             this.buttonDashboardSaveGraphImage.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(204)))));
-            this.buttonDashboardSaveGraphImage.Location = new System.Drawing.Point(327, 137);
+            this.buttonDashboardSaveGraphImage.Location = new System.Drawing.Point(341, 137);
             this.buttonDashboardSaveGraphImage.Name = "buttonDashboardSaveGraphImage";
             this.buttonDashboardSaveGraphImage.Size = new System.Drawing.Size(42, 33);
             this.buttonDashboardSaveGraphImage.TabIndex = 4;
@@ -910,7 +887,7 @@ namespace SoftSensConf
             this.listBoxDashboardTextDataRaw.Location = new System.Drawing.Point(168, 8);
             this.listBoxDashboardTextDataRaw.Name = "listBoxDashboardTextDataRaw";
             this.listBoxDashboardTextDataRaw.ScrollAlwaysVisible = true;
-            this.listBoxDashboardTextDataRaw.Size = new System.Drawing.Size(291, 124);
+            this.listBoxDashboardTextDataRaw.Size = new System.Drawing.Size(305, 124);
             this.listBoxDashboardTextDataRaw.TabIndex = 13;
             this.listBoxDashboardTextDataRaw.TabStop = false;
             // 
@@ -989,7 +966,7 @@ namespace SoftSensConf
             this.panelDashboardDataInformation.Controls.Add(this.pictureBoxDashboardLine1);
             this.panelDashboardDataInformation.Controls.Add(this.pictureBoxDashboardLine9);
             this.panelDashboardDataInformation.Controls.Add(this.pictureBox8);
-            this.panelDashboardDataInformation.Location = new System.Drawing.Point(509, 6);
+            this.panelDashboardDataInformation.Location = new System.Drawing.Point(523, 6);
             this.panelDashboardDataInformation.Name = "panelDashboardDataInformation";
             this.panelDashboardDataInformation.Size = new System.Drawing.Size(224, 187);
             this.panelDashboardDataInformation.TabIndex = 10;
@@ -1310,7 +1287,7 @@ namespace SoftSensConf
             this.panelDashboardChart.Controls.Add(this.pictureBox4);
             this.panelDashboardChart.Location = new System.Drawing.Point(8, 213);
             this.panelDashboardChart.Name = "panelDashboardChart";
-            this.panelDashboardChart.Size = new System.Drawing.Size(725, 371);
+            this.panelDashboardChart.Size = new System.Drawing.Size(739, 371);
             this.panelDashboardChart.TabIndex = 9;
             // 
             // panel6
@@ -1318,7 +1295,7 @@ namespace SoftSensConf
             this.panel6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(204)))));
             this.panel6.Controls.Add(this.panel7);
-            this.panel6.Location = new System.Drawing.Point(475, 236);
+            this.panel6.Location = new System.Drawing.Point(489, 236);
             this.panel6.Name = "panel6";
             this.panel6.Size = new System.Drawing.Size(253, 139);
             this.panel6.TabIndex = 47;
@@ -1512,7 +1489,7 @@ namespace SoftSensConf
             this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(204)))));
             this.panel3.Controls.Add(this.panel5);
-            this.panel3.Location = new System.Drawing.Point(475, 127);
+            this.panel3.Location = new System.Drawing.Point(489, 127);
             this.panel3.Name = "panel3";
             this.panel3.Size = new System.Drawing.Size(253, 113);
             this.panel3.TabIndex = 47;
@@ -1600,7 +1577,7 @@ namespace SoftSensConf
             series1.Name = "ScaledData";
             series1.ShadowColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.chartDashboardChartScaled.Series.Add(series1);
-            this.chartDashboardChartScaled.Size = new System.Drawing.Size(474, 312);
+            this.chartDashboardChartScaled.Size = new System.Drawing.Size(488, 312);
             this.chartDashboardChartScaled.TabIndex = 36;
             this.chartDashboardChartScaled.TabStop = false;
             this.chartDashboardChartScaled.Text = "Data";
@@ -1636,7 +1613,7 @@ namespace SoftSensConf
             series2.Legend = "Legend1";
             series2.Name = "RawData";
             this.chartDashboardChartRaw.Series.Add(series2);
-            this.chartDashboardChartRaw.Size = new System.Drawing.Size(474, 312);
+            this.chartDashboardChartRaw.Size = new System.Drawing.Size(488, 312);
             this.chartDashboardChartRaw.TabIndex = 35;
             this.chartDashboardChartRaw.TabStop = false;
             this.chartDashboardChartRaw.Text = "Data";
@@ -1658,7 +1635,7 @@ namespace SoftSensConf
             // 
             this.pictureBox4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBox4.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox4.Image")));
-            this.pictureBox4.Location = new System.Drawing.Point(569, 84);
+            this.pictureBox4.Location = new System.Drawing.Point(583, 84);
             this.pictureBox4.Name = "pictureBox4";
             this.pictureBox4.Size = new System.Drawing.Size(149, 25);
             this.pictureBox4.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -2716,8 +2693,6 @@ namespace SoftSensConf
         private System.Windows.Forms.Label labelDashboardFrequency;
         private System.Windows.Forms.PictureBox pictureBox8;
         private System.Windows.Forms.TextBox textBoxDashboardDataType;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelConfigurationLastUpdated;
         private System.Windows.Forms.TextBox textBoxConfigurationLastUpdated;
     }

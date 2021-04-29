@@ -43,14 +43,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SoftSensConf.exe" size="709096">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="SoftSensConf.exe" size="710120">
       <assemblyIdentity name="SoftSensConf" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>sszSKubfBElpneRknv26ZDXdnjK656Hl3u77ygcoL5g=</dsig:DigestValue>
+        <dsig:DigestValue>XHLL7KKj2AX6tjaV2onV0F+mk8dBJjtl56pW3J5PvCU=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

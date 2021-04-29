@@ -209,6 +209,29 @@ namespace SoftSensConf
                 comboBoxSetupDAUID.Enabled = true;
                 comboBoxSetupDAUDeviceName.Enabled = true;
             }
+
+            // Select raw data and disable choice of data if its not analog
+            if (GlobalDataContainerClass.ConnectivityStatus && GlobalDataContainerClass.CommunicationType != "Analog")
+            {
+                GlobalDataContainerClass.ScaledDataType = false;
+                groupBoxDashboardGraphData.Enabled = false;
+            }
+            else
+            {
+                groupBoxDashboardGraphData.Enabled = true;
+            }
+
+            if (GlobalDataContainerClass.ConnectivityStatus)
+            {
+                GlobalDataContainerClass.DeviceName = comboBoxConfigurationTag.SelectedItem.ToString();
+                GlobalDataContainerClass.DeviceLRV = Convert.ToDouble(textBoxConfigurationLRV.Text);
+                GlobalDataContainerClass.DeviceURV = Convert.ToDouble(textBoxConfigurationURV.Text);
+                GlobalDataContainerClass.DeviceALO = Convert.ToInt32(textBoxConfigurationAlarmLow.Text);
+                GlobalDataContainerClass.DeviceAHI = Convert.ToInt32(textBoxConfigurationAlarmHigh.Text);
+                GlobalDataContainerClass.IOType = textBoxConfigurationIType.Text;
+                GlobalDataContainerClass.ScanningFrequency = Convert.ToDouble(textBoxConfigurationScanningFrequency.Text);
+                GlobalDataContainerClass.CommunicationType = textBoxConfigurationCommunicationType.Text;
+            }
         }
 
         #endregion
@@ -460,8 +483,17 @@ namespace SoftSensConf
                         }
                         #endregion
 
-                        //Reading is outside of range accepted
-                        else if ((Int32.Parse(availableData) > 1000 || Int32.Parse(availableData) < 0))
+                        //Reading is outside of range accepted for analog
+                        else if ((Int32.Parse(availableData) > 1000 || Int32.Parse(availableData) < 0) 
+                                  && GlobalDataContainerClass.CommunicationType == "Analog")
+                        {
+                            textBoxDashboardFaultyData.Text = availableData;
+                            //Throw some error!
+                        }
+
+                        //Reading is outside of range acceped for Digital
+                        else if ((Int32.Parse(availableData) != 1 || Int32.Parse(availableData) != 0)
+                                  && GlobalDataContainerClass.CommunicationType == "Digital")
                         {
                             textBoxDashboardFaultyData.Text = availableData;
                             //Throw some error!
@@ -591,13 +623,69 @@ namespace SoftSensConf
                                                 // Nothing
                                                 break;
                                         }
+                                        #endregion
                                         break;
-                                    #endregion
 
                                     case "Digital":
+                                        //Place data in raw graph and listbox as scaled is locked for digital readings
+                                        #region
+                                        listBoxDashboardTextDataRaw.Items.Add(availableData);
+                                        chartDashboardChartRaw.Series["RawData"].Points.AddXY(Convert.ToDouble(listBoxDashboardTextDataRaw.Items.Count - 1),
+                                                                              Convert.ToDouble(listBoxDashboardTextDataRaw.Items[listBoxDashboardTextDataRaw.Items.Count - 1]));
+                                        
+                                        GlobalDataContainerClass.NumberOfDataPoints += 1;
 
+                                        if (listBoxDashboardTextDataRaw.Items.Count > 1)
+                                        {
+                                            listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, true);
+                                            listBoxDashboardTextDataRaw.SetSelected(listBoxDashboardTextDataRaw.Items.Count - 1, false);
+                                        }
+                                        #endregion
 
+                                        //Seperate between input and output
+                                        #region
+                                        switch (GlobalDataContainerClass.IOType)
+                                        {
+                                            case "Output":
+                                                #region
+                                                string sqlInsertQuery = "INSERT INTO LOG_DO (Log_ID, ReadingValue) VALUES (@id, @value)";
 
+                                                SqlCommand command = new SqlCommand(sqlInsertQuery, connect);
+
+                                                command.Parameters.AddWithValue("@id", logID);
+                                                command.Parameters.AddWithValue("@value", availableData);
+                                                
+                                                connect.Open();
+
+                                                command.ExecuteNonQuery();
+
+                                                connect.Close();
+                                                #endregion
+                                                break;
+
+                                            case "Input":
+                                                #region
+                                                sqlInsertQuery = "INSERT INTO LOG_DI (Log_ID, SendingValue, DI_Executed) VALUES (@id, @value, @executed)";
+
+                                                command = new SqlCommand(sqlInsertQuery, connect);
+
+                                                command.Parameters.AddWithValue("@id", logID);
+                                                command.Parameters.AddWithValue("@value", availableData);
+                                                command.Parameters.AddWithValue("@executed", 0); //Not implemented so zero as default
+
+                                                connect.Open();
+
+                                                command.ExecuteNonQuery();
+
+                                                connect.Close();
+                                                #endregion
+                                                break;
+                                            
+                                            default:
+                                                //Nothing
+                                                break;
+                                        }
+                                        #endregion
                                         break;
 
                                     default:
@@ -932,6 +1020,11 @@ namespace SoftSensConf
                 if (textBoxSetupDAUComPort.Text != ""
                     && GlobalDataContainerClass.ConnectivityStatus == false)
                 {
+                    if (comboBoxConfigurationTag.SelectedItem == null)
+                    {
+                        MessageBox.Show("Connection to DAU without Instruments are not allowed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
+                    }
                     serialPortMain.PortName = textBoxSetupDAUComPort.Text;
 
                     if (textBoxSetupDAUComPort.Text != "")
@@ -2040,6 +2133,8 @@ namespace SoftSensConf
             GlobalDataContainerClass.IOType = "";
             GlobalDataContainerClass.ScanningFrequency = 1;
             GlobalDataContainerClass.LiveData = false;
+            GlobalDataContainerClass.ScaledDataType = true;
+            groupBoxDashboardGraphData.Enabled = true;
             StopAlarmRequest();
 
             //Alarm stuff
@@ -2436,13 +2531,6 @@ namespace SoftSensConf
                 connect.Close();
             }
         }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            int testings = AddInstrumentLog(GlobalDataContainerClass.DeviceName);
-            label4.Text = testings.ToString();
-        }
-
 
         #endregion
 
